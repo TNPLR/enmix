@@ -17,8 +17,10 @@ DEFAULT: all
 start-test:
 all:
 	cd boot; ${MAKE} all;
+	cd init; ${MAKE} all
 img:
 	dd if=boot/mbr.bin of=./disk48M.hdd bs=512 count=1 conv=notrunc
-	dd if=boot/Makefile of=./disk48M.hdd bs=512 seek=1 count=1 conv=notrunc
+	dd if=init/test.bin of=./disk48M.hdd bs=512 seek=1 count=8 conv=notrunc
 clean:
 	cd boot; ${MAKE} clean;
+	cd init; ${MAKE} clean;

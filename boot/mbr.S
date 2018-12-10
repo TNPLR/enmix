@@ -18,12 +18,18 @@ BOOT_CLS:
   ; mov dl, 0x4F 80 column (0~79)
   mov dx, 0x184F
   int 0x10
+BOOT_SET_CURSOR:
+  mov ah, 0x02
+  mov bh, 0
+  mov dh, 1
+  mov dl, 0
+  int 0x10
 BOOT_WRITE_TEST:
   ; int 0x10 with ah = 0x0A to write letter
   ; mov ah, 0x0A
-  ; mov al, 'Y' // 0x59
-  mov ax, 0x0A59
-  mov bh, 0
+  ; mov al, 'T' // 0x59
+  mov ax, 0x0959
+  mov bx, 0x07
   mov cx, 1
   int 0x10
 READ_LOADER:
@@ -32,7 +38,9 @@ READ_LOADER:
   mov ah, 0x42
   mov dl, 0x80
   int 0x13
-  jmp $
+  mov ax, 0x900
+  mov ss, ax
+  jmp 0x900
 BOOT_HALT:
   cli
   hlt

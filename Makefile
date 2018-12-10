@@ -19,5 +19,6 @@ all:
 	cd boot; ${MAKE} all;
 img:
 	dd if=boot/mbr.bin of=./disk48M.hdd bs=512 count=1 conv=notrunc
+	dd if=boot/Makefile of=./disk48M.hdd bs=512 seek=1 count=1 conv=notrunc
 clean:
 	cd boot; ${MAKE} clean;

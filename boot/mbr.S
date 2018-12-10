@@ -1,10 +1,10 @@
 SECTION mbr vstart=0x7c00
-MBR_START:
+BOOT_START:
   mov ax, cs ; init all sement register to cx (0x0)
   mov ds, ax
   mov es, ax
   mov ss, ax
-MBR_CLS:
+BOOT_CLS:
   ; int 0x10 with ah = 0x06 to clear screen
   ; mov ah, 0x6
   ; mov al, 0x0
@@ -18,7 +18,7 @@ MBR_CLS:
   ; mov dl, 0x4F 80 column (0~79)
   mov dx, 0x184F
   int 0x10
-MBR_WRITE_TEST:
+BOOT_WRITE_TEST:
   ; int 0x10 with ah = 0x0A to write letter
   ; mov ah, 0x0A
   ; mov al, 'Y' // 0x59
@@ -26,9 +26,37 @@ MBR_WRITE_TEST:
   mov bh, 0
   mov cx, 1
   int 0x10
-MBR_HALT:
+READ_LOADER:
+  mov ax, DAP
+  mov si, ax
+  mov ah, 0x42
+  mov dl, 0x80
+  int 0x13
+  jmp $
+BOOT_HALT:
   cli
   hlt
+BOOT_END:
+DAP:
+  db 0x10
+  db 0
+  dw 8
+  dd 0x00000900
+  dd 0x00000001
+  dd 0x00000000
+  times 440 - ($ - $$) db 0x0
+MBR_START:
+  dd 0x52735273 ; Magic Value
+  dw 0x0000
+  db 0x80
+  db 0x01
+  db 0x02
+  db 0x00
+  db 0x00 ; Partition type
+  db 0x01
+  db 0x20
+  db 0x00
+  dd 0x00000001
+  dd 0x00003C00
 MBR_END:
-  times 510 - ($ - $$) db 0x0
   db 0x55, 0xAA

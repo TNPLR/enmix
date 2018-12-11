@@ -15,12 +15,14 @@ export NASMFLAGS=
 DEFAULT: all
 .PHONY: start-test all clean img
 start-test:
-all:
-	cd boot; ${MAKE} all;
-	cd init; ${MAKE} all
+all: boot_all init_all
+boot_all:
+	${MAKE} all -C boot/
+init_all:
+	${MAKE} all -C init/
 img:
 	dd if=boot/mbr.bin of=./disk48M.hdd bs=512 count=1 conv=notrunc
-	dd if=init/test.bin of=./disk48M.hdd bs=512 seek=1 count=8 conv=notrunc
+	dd if=init/kernel.bin of=./disk48M.hdd bs=512 seek=1 count=8 conv=notrunc
 clean:
-	cd boot; ${MAKE} clean;
-	cd init; ${MAKE} clean;
+	${MAKE} clean -C boot/
+	${MAKE} clean -C init/

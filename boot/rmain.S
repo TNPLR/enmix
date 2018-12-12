@@ -1,3 +1,4 @@
+%include "boot.inc"
 [BITS 16]
 SECTION .loader_start vstart=0x900
 loader_start:
@@ -68,13 +69,19 @@ p_mode:
   call write_str
 
   mov eax, 0x9
-  mov ebx, 0x400000
-  mov ecx, 0x1000 ; 2 MB
+  mov ebx, KERNEL_READ_ADDR
+  mov ecx, 0x1000 ; 2 MB (4096 sectors)
   call ide_reader
+
+  call kernel_copy
+
+  mov esp, 0x90000
+  jmp KERNEL_BIN_ADDR + KERNEL_START_OFFSET
 
   jmp $
 ack_1_msg db "[32 bits]        For Wancat, whom the best programmer-friend I have known."
 ack_2_msg db "                 For yun_zhen and yu_han, who chat with me always."
+
 write_str:
   ; dh, dl position to write
   ; ecx: count of string
@@ -98,12 +105,12 @@ write_str:
   add bp, 1
   loop .loop_write
   ret
+
 ; ide_reader: Read ATA drive
 ; eax: LBA
 ; ebx: ADDR to Write
 ; ecx: How many sectors to read
 ide_reader:
-.ide_loop:
   push eax
   push ebx
   push ecx
@@ -114,7 +121,7 @@ ide_reader:
   pop eax
   add eax, 1
   add ebx, 512
-  loop .ide_loop
+  loop ide_reader
   ret
 read_ide:
   mov esi, eax
@@ -163,4 +170,46 @@ read_ide:
   mov [ebx], eax
   add ebx, 4
   loop .go_on_read
+  ret
+
+kernel_copy:
+  xor eax, eax
+  xor ebx, ebx
+  xor ecx, ecx
+  xor edx, edx
+
+  mov ebx, [KERNEL_READ_ADDR + 32]
+  add ebx, KERNEL_READ_ADDR
+  mov cx, [KERNEL_READ_ADDR + 56]
+  mov dx, [KERNEL_READ_ADDR + 54]
+.segments:
+  cmp dword [ebx], 0x00000000
+  je .NULL_PT
+
+  push dword [ebx + 0x20]
+  mov eax, [ebx + 0x08]
+  add eax, KERNEL_READ_ADDR
+  push eax
+  push dword [ebx + 0x10]
+  call mem_cpy
+  add esp, 12
+
+.NULL_PT:
+  add ebx, edx
+  loop .segments
+  ret
+
+; mem_cpy
+; inputs: (destination, source, size)
+mem_cpy:
+  cld
+  push ebp
+  mov ebp, esp
+  push ecx
+  mov edi, [ebp + 8]
+  mov esi, [ebp + 12]
+  mov ecx, [ebp + 16]
+  rep movsb
+  pop ecx
+  pop ebp
   ret

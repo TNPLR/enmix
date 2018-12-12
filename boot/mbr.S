@@ -67,4 +67,5 @@ MBR_START:
   dd 0x00000001
   dd 0x00003C00
 MBR_END:
+  times 510 - ($ - $$) db 0x0
   db 0x55, 0xAA

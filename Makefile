@@ -22,7 +22,8 @@ init_all:
 	${MAKE} all -C init/
 img:
 	dd if=boot/mbr.bin of=./disk48M.hdd bs=512 count=1 conv=notrunc
-	dd if=init/kernel.bin of=./disk48M.hdd bs=512 seek=1 count=8 conv=notrunc
+	dd if=boot/rmain.bin of=./disk48M.hdd bs=512 seek=1 count=8 conv=notrunc
+	dd if=./README.md of=./disk48M.hdd bs=512 seek=9 count=20 conv=notrunc
 clean:
 	${MAKE} clean -C boot/
 	${MAKE} clean -C init/

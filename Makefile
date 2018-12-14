@@ -6,7 +6,7 @@ export AR=ar
 export NASM=nasm
 
 export CFLAGS=-ffreestanding -fno-stack-protector \
-							-mno-red-zone
+							-mno-red-zone -ffunction-sections -Wall
 export CXXFLAGS=
 export ASFLAGS=
 export LDFLAGS=

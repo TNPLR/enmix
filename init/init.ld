@@ -1,9 +1,22 @@
-ENTRY(main)
+ENTRY(pmain)
 SECTIONS {
-  . = 0x100000;
+  . = 1M;
   .text :
   {
+    *(.text.pmain)
     *(.text)
   }
-  * : { *(.*) }
+  .rodata :
+  {
+    *(.rodata)
+    rodata_end = .;
+  }
+  .data : AT (rodata_end)
+  {
+    *(.data)
+  }
+  .bss :
+  {
+    *(.bss)
+  }
 }

@@ -34,3 +34,4 @@ img:
 clean:
 	${MAKE} clean -C boot/
 	${MAKE} clean -C init/
+	${MAKE} clean -C kernel/

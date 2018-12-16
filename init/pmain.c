@@ -140,18 +140,18 @@ static int cpuid_detect_long_mode(void)
 static void check_long_mode(void)
 {
   if (!test_cpuid_long()) {
-    pputs("[ERROR] CPU DOES NOT support CPUID\n");
+    pputs("[ERR] CPU DOES NOT support CPUID\n");
     goto long_mode_error;
   }
   if (!cpuid_extended_check_long()) {
-    pputs("[ERROR] CPU DOES NOT support long-mode-test CPUID\n");
+    pputs("[ERR] CPU DOES NOT support long-mode-test CPUID\n");
     goto long_mode_error;
   }
   if (!cpuid_detect_long_mode()) {
-    pputs("[ERROR] CPU DOES NOT support long-mode\n");
+    pputs("[ERR] CPU DOES NOT support long-mode\n");
     goto long_mode_error;
   }
-  pputs("[INFO] Long-mode-checking is done\n");
+  pputs("[EMERG] Long-mode-checking is done\n");
   return;
 long_mode_error:
   pputs("[ERROR] MIROS CANNOT BE BOOTED\n");
@@ -167,16 +167,18 @@ static void set_cr3(uint32_t val)
 {
   asm volatile("movl %0, %%cr3"::"a"(val));
 }
-const uint32_t PML4E = 0x1000;
+const uint32_t PML4T = 0x1000;
+const uint32_t KERNEL_PDPTE = 0x5000;
 #define PAGE_SIZE 0x1000
 static void setup_paging(void)
 {
-  clear_mem((void *)PML4E, PAGE_SIZE * 4);
-  set_cr3(PML4E);
-  *(uint32_t *)PML4E = PML4E + PAGE_SIZE + 0x7;
-  *(uint32_t *)(PML4E + PAGE_SIZE) = PML4E + 2 * PAGE_SIZE + 0x7;
-  *(uint32_t *)(PML4E + 2 * PAGE_SIZE) = PML4E + 3 * PAGE_SIZE + 0x7;
-  uint32_t *page_table_ptr = (uint32_t *)(PML4E + 3 * PAGE_SIZE);
+  clear_mem((void *)PML4T, PAGE_SIZE * 4);
+  set_cr3(PML4T);
+  pputs("[INFO] CR3 Register set\n");
+  *(uint32_t *)PML4T = PML4T + PAGE_SIZE + 0x7;
+  *(uint32_t *)(PML4T + PAGE_SIZE) = PML4T + 2 * PAGE_SIZE + 0x7;
+  *(uint32_t *)(PML4T + 2 * PAGE_SIZE) = PML4T + 3 * PAGE_SIZE + 0x7;
+  uint32_t *page_table_ptr = (uint32_t *)(PML4T + 3 * PAGE_SIZE);
   uint32_t pt_index = 0x3;
   for (uint32_t i = 0; i < 256; ++i) {
     *page_table_ptr = pt_index;
@@ -185,6 +187,74 @@ static void setup_paging(void)
   }
   pputs("[INFO] Paging done\n");
 }
+
+#define KERNEL_LOAD_ADDR 0x100000
+static void kernel_paging(uint32_t kernel_mb_count)
+{
+  uint32_t kernel_page_count = kernel_mb_count * 256;
+  // 7th entry of PML4
+  *(uint32_t *)(PML4T+8*7) = KERNEL_PDPTE;
+  *(uint32_t *)(KERNEL_PDPTE) = KERNEL_PDPTE + PAGE_SIZE + 0x7;
+  *(uint32_t *)(KERNEL_PDPTE + PAGE_SIZE) = KERNEL_PDPTE + 2 * PAGE_SIZE + 0x7;
+  uint32_t now_ptable = 0;
+  uint32_t *ptable_ptr = (uint32_t *)(KERNEL_PDPTE + 2 * PAGE_SIZE);
+  uint32_t pt_index = 100003;
+  for (uint32_t i = 1; i <= kernel_page_count; ++i) {
+    *ptable_ptr = pt_index;
+    pt_index += PAGE_SIZE;
+    ptable_ptr += 2;
+    if (i % 512 == 0) {
+      ++now_ptable;
+      *(uint32_t *)(KERNEL_PDPTE + PAGE_SIZE + now_ptable*8) = 
+        KERNEL_PDPTE + (2 + now_ptable) * PAGE_SIZE + 0x7;
+    }
+  }
+  pputs("[INFO] Kernel paging configured\n");
+}
+static void pmem_cpy(char *dst, char const *src, uint32_t size)
+{
+  for (uint32_t i = 0; i < size; ++i) {
+    *dst++ = *src++;
+  }
+}
+#define KERNEL_READ_ADDR 0x800000
+#define KERNEL_BIN_ADDR 0xc0000000
+static void copy_kernel(void)
+{
+  uint32_t program_header = *(uint32_t *)(KERNEL_READ_ADDR+32);
+  program_header += KERNEL_BIN_ADDR;
+  uint32_t program_header_count = *(uint32_t *)(KERNEL_READ_ADDR+56);
+  uint32_t program_header_size = *(uint32_t *)(KERNEL_READ_ADDR+54);
+  for (int i = 0; i < program_header_count; ++i) {
+    if (*(uint8_t *)program_header == 0) {
+      program_header += program_header_size;
+      continue;
+    }
+    pmem_cpy((char *)*(uint32_t *)(program_header+0x10),
+        (char *)*(uint32_t *)(program_header+0x08) + KERNEL_READ_ADDR,
+        *(uint32_t *)(program_header+0x20));
+    program_header += program_header_size;
+  }
+  pputs("[INFO] Kernel loadin\n");
+}
+static void start_pae(void)
+{
+  asm volatile("movl %%cr4, %%eax; orl %0, %%eax;"
+      "movl %%eax, %%cr4"::"i"(1<<5):"eax");
+  pputs("[INFO] PAE enabled\n");
+}
+static void enter_longmode(void)
+{
+  asm volatile("rdmsr; orl %0, %%eax; wrmsr"::"i"(1<<8),"c"(0xC0000080):"ax");
+  pputs("[INFO] Longmode enabled\n");
+}
+static void enable_paging(void)
+{
+  asm volatile("movl %%cr0, %%eax; orl %0, %%eax;"
+      "mov %%eax, %%cr0"::"i"(1<<31):"ax");
+  pputs("[INFO] Paging enabled\n");
+}
+#define KERNEL_SIZE 2
 int pmain()
 {
   set_cursor(400);
@@ -193,6 +263,16 @@ int pmain()
   check_long_mode();
   
   setup_paging();
+
+  kernel_paging(KERNEL_SIZE); // 2mb kernel
+
+  start_pae();
+
+  enter_longmode();
+
+  enable_paging();
+
+  copy_kernel();
   while (1);
   return 0;
 }

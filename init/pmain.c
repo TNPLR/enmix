@@ -1,15 +1,15 @@
 #include <stdint.h>
-static void poutb(uint16_t port, uint8_t value)
+static inline void poutb(uint16_t port, uint8_t value)
 {
   asm volatile("outb %%al, %%dx"::"a"(value), "d"(port));
 }
-static uint8_t pinb(uint16_t port)
+static inline uint8_t pinb(uint16_t port)
 {
   uint8_t ret_val;
   asm volatile("inb %%dx, %%al":"=a"(ret_val):"d"(port));
   return ret_val;
 }
-static uint16_t pinw(uint16_t port)
+static inline uint16_t pinw(uint16_t port)
 {
   uint16_t ret_val;
   asm volatile("inw %%dx, %%ax":"=a"(ret_val):"d"(port));
@@ -23,7 +23,7 @@ static uint16_t put_backspace(uint16_t cursor)
 }
 static uint16_t put_normal_char(uint16_t cursor, char const c)
 {
-  *(uint16_t*)((uint32_t)0xb8000+(cursor<<1)) = 0x700 | c;
+  *(uint16_t*)((uint32_t)0xb8000 + cursor*2) = 0x700 | c;
   return cursor+1;
 }
 static uint16_t put_carriage_return(uint16_t cursor)
@@ -33,13 +33,13 @@ static uint16_t put_carriage_return(uint16_t cursor)
 }
 static uint16_t put_new_line(uint16_t cursor)
 {
-  cursor -= cursor % 80 + 80;
+  cursor += 80 - cursor % 80;
   return cursor;
 }
 static void roll_screen(void)
 {
-  uint32_t *dest = 0xb8000;
-  uint32_t *src = 0xb80a0;
+  uint32_t *dest = (uint32_t *)0xb8000;
+  uint32_t *src = (uint32_t *)0xb80a0;
   for (int i = 0; i < 960; ++i) {
     *dest++ = *src++;
   }
@@ -48,7 +48,7 @@ static void clear_last_line(void)
 {
   uint16_t black_space = 0x0720;
   for (int i = 0; i < 160; i+=2) {
-    *(uint16_t*)(3840+i) = black_space;
+    *(uint16_t*)((uint32_t)3840+i) = black_space;
   }
 }
 static uint16_t get_cursor(void)
@@ -90,11 +90,17 @@ static void pputc(char const c)
   }
   set_cursor(cursor);
 }
+static void pputs(char const *s)
+{
+  while(*s) {
+    pputc(*s);
+    ++s;
+  }
+}
 int pmain()
 {
-  pputc('D');
-  pputc('A');
-  pputc('C');
+  set_cursor(400);
+  pputs("[KERNEL]\n[INFO] Kernel initalizing...");
   while (1);
   return 0;
 }

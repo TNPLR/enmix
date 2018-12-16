@@ -76,7 +76,7 @@ p_mode:
   call kernel_copy
 
   mov esp, 0x90000
-  jmp KERNEL_BIN_ADDR + KERNEL_START_OFFSET
+  jmp eax
 
   jmp $
 ack_1_msg db "[32 bits]        For Wancat, whom the best programmer-friend I have known."
@@ -197,6 +197,7 @@ kernel_copy:
 .NULL_PT:
   add ebx, edx
   loop .segments
+  mov eax, [KERNEL_READ_ADDR+0x18]
   ret
 
 ; mem_cpy

@@ -157,11 +157,42 @@ long_mode_error:
   pputs("[ERROR] MIROS CANNOT BE BOOTED\n");
   while(1);
 }
+static void clear_mem(void *position, uint32_t byte_count)
+{
+  while (byte_count--) {
+    *((uint8_t *)position+byte_count) = 0;
+  }
+}
+static void set_cr3(uint32_t val)
+{
+  asm volatile("movl %0, %%cr3"::"a"(val));
+}
+const uint32_t PML4E = 0x1000;
+#define PAGE_SIZE 0x1000
+static void setup_paging(void)
+{
+  clear_mem((void *)PML4E, PAGE_SIZE * 4);
+  set_cr3(PML4E);
+  *(uint32_t *)PML4E = PML4E + PAGE_SIZE + 0x7;
+  *(uint32_t *)(PML4E + PAGE_SIZE) = PML4E + 2 * PAGE_SIZE + 0x7;
+  *(uint32_t *)(PML4E + 2 * PAGE_SIZE) = PML4E + 3 * PAGE_SIZE + 0x7;
+  uint32_t *page_table_ptr = (uint32_t *)(PML4E + 3 * PAGE_SIZE);
+  uint32_t pt_index = 0x3;
+  for (uint32_t i = 0; i < 256; ++i) {
+    *page_table_ptr = pt_index;
+    pt_index += PAGE_SIZE;
+    page_table_ptr += 2; // Because PT is 64 bit
+  }
+  pputs("[INFO] Paging done\n");
+}
 int pmain()
 {
   set_cursor(400);
   pputs("[KERNEL]\n[INFO] Kernel initalizing...\n");
+  
   check_long_mode();
+  
+  setup_paging();
   while (1);
   return 0;
 }

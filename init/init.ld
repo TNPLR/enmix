@@ -1,9 +1,8 @@
 ENTRY(pmain)
 SECTIONS {
-  . = 1M;
+  . = 0x10000;
   .text :
   {
-    *(.text.pmain)
     *(.text)
   }
   .rodata :

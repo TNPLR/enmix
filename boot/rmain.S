@@ -69,11 +69,16 @@ p_mode:
   call write_str
 
   mov eax, 0x9
-  mov ebx, KERNEL_READ_ADDR
-  mov ecx, 0x1000 ; 2 MB (4096 sectors)
+  mov ebx, INIT_READ_ADDR
+  mov ecx, 0x20 ; 16 Kib (32 sectors)
   call ide_reader
 
-  call kernel_copy
+  mov eax, 41
+  mov ebx, KERNEL_READ_ADDR
+  mov ecx, 0x1000 ; 2 Mib (4096 sectors)
+  call ide_reader
+
+  call init_copy
 
   mov esp, 0x90000
   jmp eax
@@ -198,6 +203,34 @@ kernel_copy:
   add ebx, edx
   loop .segments
   mov eax, [KERNEL_READ_ADDR+0x18]
+  ret
+
+init_copy:
+  xor eax, eax
+  xor ebx, ebx
+  xor ecx, ecx
+  xor edx, edx
+
+  mov ebx, [INIT_READ_ADDR + 32]
+  add ebx, INIT_READ_ADDR
+  mov cx, [INIT_READ_ADDR + 56]
+  mov dx, [INIT_READ_ADDR + 54]
+.segments:
+  cmp dword [ebx], 0x00000000
+  je .NULL_PT
+
+  push dword [ebx + 0x20]
+  mov eax, [ebx + 0x08]
+  add eax, INIT_READ_ADDR
+  push eax
+  push dword [ebx + 0x10]
+  call mem_cpy
+  add esp, 12
+
+.NULL_PT:
+  add ebx, edx
+  loop .segments
+  mov eax, [INIT_READ_ADDR+0x18]
   ret
 
 ; mem_cpy

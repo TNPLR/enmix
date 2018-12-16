@@ -1,12 +1,12 @@
 # Miros - An Operation System for Fun
 ## Compile
-'''make clean'''
+```make clean```
 to clean all the object files
 
-'''make all'''
+```make all```
 to compile all the object files
 
-'''make img'''
+```make img```
 to copy all the file into the disk image
 ## Boot
 When the system boot, there are many steps to do.

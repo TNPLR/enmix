@@ -97,10 +97,71 @@ static void pputs(char const *s)
     ++s;
   }
 }
+static inline uint32_t get_flags(void)
+{
+  uint32_t ret_val;
+  asm volatile("pushfl;popl %%eax":"=a"(ret_val)::"memory");
+  return ret_val;
+}
+static inline void set_flags(uint32_t flag)
+{
+  asm volatile("pushl %%eax; popfl"::"a"(flag):"memory");
+}
+struct cpuid_registers {
+  uint32_t eax, ebx, ecx, edx;
+};
+static inline struct cpuid_registers cpuid(uint32_t num)
+{
+  struct cpuid_registers ret_val;
+  asm volatile("cpuid":"=a"(ret_val.eax),"=b"(ret_val.ebx),
+      "=c"(ret_val.ecx),"=d"(ret_val.edx):"a"(num));
+  return ret_val;
+}
+static int test_cpuid_long(void)
+{
+  uint32_t flags = get_flags();
+  uint32_t tmp_flags = flags;
+  tmp_flags ^= 1 << 21;
+  set_flags(tmp_flags);
+  tmp_flags = get_flags();
+  set_flags(flags);
+  return flags != tmp_flags;
+}
+static int cpuid_extended_check_long(void)
+{
+  struct cpuid_registers tmp = cpuid(0x80000000);
+  return tmp.eax >= 0x80000001;
+}
+static int cpuid_detect_long_mode(void)
+{
+  struct cpuid_registers tmp = cpuid(0x80000001);
+  return tmp.edx & (1 << 29);
+}
+static void check_long_mode(void)
+{
+  if (!test_cpuid_long()) {
+    pputs("[ERROR] CPU DOES NOT support CPUID\n");
+    goto long_mode_error;
+  }
+  if (!cpuid_extended_check_long()) {
+    pputs("[ERROR] CPU DOES NOT support long-mode-test CPUID\n");
+    goto long_mode_error;
+  }
+  if (!cpuid_detect_long_mode()) {
+    pputs("[ERROR] CPU DOES NOT support long-mode\n");
+    goto long_mode_error;
+  }
+  pputs("[INFO] Long-mode-checking is done\n");
+  return;
+long_mode_error:
+  pputs("[ERROR] MIROS CANNOT BE BOOTED\n");
+  while(1);
+}
 int pmain()
 {
   set_cursor(400);
-  pputs("[KERNEL]\n[INFO] Kernel initalizing...");
+  pputs("[KERNEL]\n[INFO] Kernel initalizing...\n");
+  check_long_mode();
   while (1);
   return 0;
 }

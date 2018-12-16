@@ -5,11 +5,11 @@ export LD=ld
 export AR=ar
 export NASM=nasm
 export OC=objcopy
-
+export TOP_DIR := ${PWD}
 export CFLAGS=-ffreestanding -fno-stack-protector \
 							-mno-red-zone -ffunction-sections -Wall \
 							-mno-mmx -mno-sse -mno-sse2 -nostdlib \
-							-fno-plt -fno-pic
+							-fno-plt -fno-pic -Wextra -I${TOP_DIR}/include/
 export CXXFLAGS=
 export ASFLAGS=
 export LDFLAGS=

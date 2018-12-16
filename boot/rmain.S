@@ -7,15 +7,21 @@ gdt_addr:
   GDT_BASE:
     dd 0x00000000
     dd 0x00000000
-  GDT_CODE:
+  GDT_CODE_32:
     dd 0x0000FFFF
     dd 0x00CF9A00
-  GDT_DATA:
+  GDT_DATA_32:
     dd 0x0000FFFF
     dd 0x00CF9200
   GDT_VIDEO:
     dd 0x80000007
     dd 0x00C0920B
+  GDT_CODE_64:
+    dd 0x00000000
+    dd 0x00AF9A00
+  GDT_DATA_64:
+    dd 0x00000000
+    dd 0x00009200
 gdt_end:
 GDT_SIZE equ gdt_end - gdt_addr
 GDT_LIMIT equ GDT_SIZE - 1

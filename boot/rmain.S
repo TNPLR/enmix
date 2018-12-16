@@ -177,34 +177,6 @@ read_ide:
   loop .go_on_read
   ret
 
-kernel_copy:
-  xor eax, eax
-  xor ebx, ebx
-  xor ecx, ecx
-  xor edx, edx
-
-  mov ebx, [KERNEL_READ_ADDR + 32]
-  add ebx, KERNEL_READ_ADDR
-  mov cx, [KERNEL_READ_ADDR + 56]
-  mov dx, [KERNEL_READ_ADDR + 54]
-.segments:
-  cmp dword [ebx], 0x00000000
-  je .NULL_PT
-
-  push dword [ebx + 0x20]
-  mov eax, [ebx + 0x08]
-  add eax, KERNEL_READ_ADDR
-  push eax
-  push dword [ebx + 0x10]
-  call mem_cpy
-  add esp, 12
-
-.NULL_PT:
-  add ebx, edx
-  loop .segments
-  mov eax, [KERNEL_READ_ADDR+0x18]
-  ret
-
 init_copy:
   xor eax, eax
   xor ebx, ebx
@@ -216,8 +188,8 @@ init_copy:
   mov cx, [INIT_READ_ADDR + 56]
   mov dx, [INIT_READ_ADDR + 54]
 .segments:
-  cmp dword [ebx], 0x00000000
-  je .NULL_PT
+  test dword [ebx], 0x00000001 ; PT_LOAD
+  jz .NULL_PT
 
   push dword [ebx + 0x20]
   mov eax, [ebx + 0x08]

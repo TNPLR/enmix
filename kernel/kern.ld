@@ -1,6 +1,6 @@
 ENTRY(kmain)
 SECTIONS {
-  . = 1M;
+  . = 0xc0000000;
   .text :
   {
     *(.text)

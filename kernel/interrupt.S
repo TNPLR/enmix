@@ -36,12 +36,12 @@ intr%1entry:
   mov rdi, %1
   extern general_interrupt
   call general_interrupt
-  mov al, 0x20
-  out 0xa0, al
-  out 0x20, al
+  ;mov al, 0x20
+  ;out 0xa0, al
+  ;out 0x20, al
 
   popaq
-  add esp, 8
+  add rsp, 8
   iretq
 
 section .data

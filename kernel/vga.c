@@ -1,4 +1,5 @@
 #include "vga.h"
+#include "kio.h"
 #include "cpuio.h"
 #include <stdint.h>
 static uint16_t put_backspace(uint16_t cursor)

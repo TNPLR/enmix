@@ -66,3 +66,8 @@ void enable_interrupt(void)
 {
   asm volatile("sti");
 }
+
+void disable_interrupt(void)
+{
+  asm volatile("cli");
+}

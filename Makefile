@@ -7,7 +7,7 @@ export NASM=nasm
 export OC=objcopy
 export TOP_DIR := ${PWD}
 export CFLAGS=-ffreestanding -fno-stack-protector \
-							-mno-red-zone -ffunction-sections -Wall \
+							-mno-red-zone -Wall \
 							-mno-mmx -mno-sse -mno-sse2 -nostdlib \
 							-fno-plt -fno-pic -Wextra -I${TOP_DIR}/include/
 export CXXFLAGS=
@@ -17,7 +17,7 @@ export ARFLAGS=
 export NASMFLAGS=
 
 DEFAULT: all
-.PHONY: start-test all clean img
+.PHONY: start-test all clean img test
 start-test:
 all: boot_all init_all kernel_all
 boot_all:

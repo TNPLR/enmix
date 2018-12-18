@@ -1,4 +1,5 @@
 #include "kio.h"
+#include "pic.h"
 #include "vga.h"
 #include "interrupt.h"
 void init_data_segment()
@@ -13,15 +14,23 @@ void init_data_segment()
 void init_std_put()
 {
   set_kputc(vga_putc);
+  kputs("[INFO] Putc set\n");
+}
+void init_all(void)
+{
+  init_std_put();
+  kputs("[INFO] Init start\n");
+  init_data_segment();
+  pic_init();
+  idt_init();
+  enable_interrupt();
+  //disable_interrupt();
+  kputs("[INFO] Init done\n");
 }
 int kmain(void)
 {
-  init_std_put();
+  init_all();
   kputs("[INFO] [64 BIT Mode] Kernel in 64 bits mode now\n");
   kputs("[INFO] Welcome to Miros\n");
-  init_data_segment();
-  idt_init();
-  enable_interrupt();
-  disable_interrupt();
   while (1);
 }

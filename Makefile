@@ -19,14 +19,16 @@ NASMFLAGS =
 
 SRC_BOOT = ${addprefix boot/,mbr.asm rmain.asm}
 SRC_INIT = ${addprefix init/,pmain.c}
-SRC_KERNEL_C = ${addprefix kernel/,interrupt.c kio.c kmain.c vga.c}
+SRC_KERNEL_C = ${addprefix kernel/,interrupt.c kio.c kmain.c}
 SRC_KERNEL_ASM = ${addprefix kernel/,intr.asm}
+SRC_DRIVERS_C = ${addprefix drivers/,vga.c pic.c}
 OBJ_BOOT = ${SRC_BOOT:.asm=.bin}
 OBJ_INIT = ${SRC_INIT:.c=.o}
-OBJ_KERNEL_C = ${SRC_KERNEL_C:.c=.o}
+OBJ_KERNEL_C = ${SRC_KERNEL_C:.c=.o} ${SRC_DRIVERS_C:.c=.o}
 OBJ_KERNEL_ASM = ${SRC_KERNEL_ASM:.asm=.o}
 
-.DEFAULT: all
+.DEFAULT: DEFAULT
+DEFAULT: all
 .PHONY: start-test all clean img test
 start-test:
 all: img
@@ -48,7 +50,8 @@ img: kernel.elf init.elf ${OBJ_BOOT}
 	dd if=boot/rmain.bin of=./disk48M.hdd bs=512 seek=1 count=8 conv=notrunc
 	dd if=init.elf of=./disk48M.hdd bs=512 seek=9 count=32 conv=notrunc
 	dd if=kernel.elf of=./disk48M.hdd bs=512 seek=41 count=4096 conv=notrunc
-clean: RM_TARGETS = ${addsuffix *.bin,boot/ init/ kernel/} ${addsuffix *.o,boot/ init/ kernel/}
+clean: RM_TARGETS = ${addsuffix *.bin,boot/ init/ kernel/ drivers/}\
+										${addsuffix *.o,boot/ init/ kernel/ drivers/}
 clean:
 	rm -rf ${RM_TARGETS} *.elf
 test:

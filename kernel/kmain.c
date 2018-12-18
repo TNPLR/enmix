@@ -1,4 +1,5 @@
 #include "kio.h"
+#include "timer8253.h"
 #include "pic.h"
 #include "vga.h"
 #include "interrupt.h"
@@ -23,6 +24,7 @@ void init_all(void)
   init_data_segment();
   pic_init();
   idt_init();
+  timer8253_init();
   enable_interrupt();
   //disable_interrupt();
   kputs("[INFO] Init done\n");

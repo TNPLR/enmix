@@ -35,7 +35,7 @@ static void clear_last_line(void)
 {
   uint16_t black_space = 0x0720;
   for (int i = 0; i < 160; i+=2) {
-    *(uint16_t*)((uintptr_t)3840+i) = black_space;
+    *(uint16_t*)((uintptr_t)0xb8000+3840+i) = black_space;
   }
 }
 static uint16_t get_cursor(void)

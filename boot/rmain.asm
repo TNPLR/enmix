@@ -44,6 +44,7 @@ loader_main:
   or al, 2
   out 0x92, al
 
+  cli
   lgdt [gdt_ptr]
 
   mov eax, cr0

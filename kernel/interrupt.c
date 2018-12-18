@@ -62,6 +62,16 @@ void general_interrupt(uint64_t s)
   kputs(".....\n");
 }
 
+static uint8_t timer_int_count = 0;
+static uint64_t sec_count = 0;
+void timer_interrupt(uint64_t s)
+{
+  if (++timer_int_count % 20 == 0) {
+    kputuint(++sec_count,10);
+    kputs(" sec.\n");
+    timer_int_count = 0;
+  }
+}
 void enable_interrupt(void)
 {
   asm volatile("sti");

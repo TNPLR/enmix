@@ -13,3 +13,17 @@ void kputs(char const *s)
     ++s;
   }
 }
+
+void kputuint(uintmax_t num, unsigned base)
+{
+  static char const *digit = "0123456789ABCDEF";
+  static char buffer[50];
+  char *ptr;
+  ptr = &buffer[49];
+  *ptr = '\0';
+  do {
+    *--ptr = digit[num % base];
+    num /= base;
+  } while (num != 0);
+  kputs(ptr);
+}

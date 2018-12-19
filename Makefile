@@ -7,7 +7,7 @@ AR = ar
 NASM = nasm
 OC = objcopy
 TOPDIR := ${PWD}
-CFLAGS = -ffreestanding -fno-stack-protector \
+CFLAGS = -O3 -ffreestanding -fno-stack-protector \
 							-mno-red-zone -Wall \
 							-mno-mmx -mno-sse -mno-sse2 -nostdlib \
 							-fno-plt -fno-pic -Wextra -I${TOPDIR}/include/
@@ -22,9 +22,10 @@ SRC_INIT = ${addprefix init/,pmain.c}
 SRC_KERNEL_C = ${addprefix kernel/,interrupt.c kio.c kmain.c}
 SRC_KERNEL_ASM = ${addprefix kernel/,intr.asm}
 SRC_DRIVERS_C = ${addprefix drivers/,vga.c pic.c timer8253.c}
+SRC_LIB_C = ${add prefix lib/,string.c}
 OBJ_BOOT = ${SRC_BOOT:.asm=.bin}
 OBJ_INIT = ${SRC_INIT:.c=.o}
-OBJ_KERNEL_C = ${SRC_KERNEL_C:.c=.o} ${SRC_DRIVERS_C:.c=.o}
+OBJ_KERNEL_C = ${SRC_KERNEL_C:.c=.o} ${SRC_DRIVERS_C:.c=.o} ${SRC_LIB_C:.c=.o}
 OBJ_KERNEL_ASM = ${SRC_KERNEL_ASM:.asm=.o}
 
 .DEFAULT: DEFAULT
@@ -50,8 +51,8 @@ img: kernel.elf init.elf ${OBJ_BOOT}
 	dd if=boot/rmain.bin of=./disk48M.hdd bs=512 seek=1 count=8 conv=notrunc
 	dd if=init.elf of=./disk48M.hdd bs=512 seek=9 count=32 conv=notrunc
 	dd if=kernel.elf of=./disk48M.hdd bs=512 seek=41 count=4096 conv=notrunc
-clean: RM_TARGETS = ${addsuffix *.bin,boot/ init/ kernel/ drivers/}\
-										${addsuffix *.o,boot/ init/ kernel/ drivers/}
+clean: RM_TARGETS = ${addsuffix *.bin,boot/ init/ kernel/ drivers/ lib/}\
+										${addsuffix *.o,boot/ init/ kernel/ drivers/ lib/}
 clean:
 	rm -rf ${RM_TARGETS} *.elf
 test:

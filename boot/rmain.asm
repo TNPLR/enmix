@@ -40,6 +40,8 @@ loader_main:
   mov bp, acknoledgement
   int 0x10
 
+  call get_ram_size
+
   in al, 0x92
   or al, 2
   out 0x92, al
@@ -53,6 +55,33 @@ loader_main:
   
   jmp CODE_SELECTOR:p_mode
 acknoledgement db "[16 bits] Miros: For You, my Parents, and my friends."
+get_ram_size:
+  xor ebx, ebx
+  mov edx, 0x534d4150
+  mov di, MEMORY_INFO_ADDR+0x8
+.e820_get_loop:
+  mov eax, 0xe820
+  mov ecx, 20
+  int 0x15
+  jc .e820_error
+
+  add di, cx
+  inc word [MEMORY_INFO_ADDR]
+  cmp ebx, 0
+  jnz .e820_get_loop
+  ret
+.e820_error:
+  mov ax, 0x1300
+  mov bx, 0x0007
+  mov cx, 10
+  mov dx, 0x0200
+  mov bp, e820_error_msg
+  int 0x10
+
+  cli
+  hlt
+
+e820_error_msg db "E820 ERROR"
 [BITS 32]
 p_mode:
   mov ax, DATA_SELECTOR
@@ -226,3 +255,4 @@ mem_cpy:
   pop ecx
   pop ebp
   ret
+

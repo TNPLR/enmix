@@ -3,6 +3,7 @@
 #include "pic.h"
 #include "vga.h"
 #include "interrupt.h"
+#include "e820.h"
 void init_data_segment()
 {
   asm volatile("movw %0, %%ax;"
@@ -17,6 +18,19 @@ void init_std_put()
   set_kputc(vga_putc);
   kputs("[INFO] Putc set\n");
 }
+void print_ram(void)
+{
+  uint64_t mem = get_ram();
+  kputs("[INFO] RAM size: ");
+  kputuint(convert_ram_gib(mem), 10);
+  kputs(" Gib + ");
+  kputuint(convert_ram_mib(mem) % 1024, 10);
+  kputs(" Mib + ");
+  kputuint(convert_ram_kib(mem) % 1024, 10);
+  kputs(" Kib + ");
+  kputuint(mem % 1024, 10);
+  kputs(" Bytes\n");
+}
 void init_all(void)
 {
   init_std_put();
@@ -27,6 +41,7 @@ void init_all(void)
   timer8253_init();
   enable_interrupt();
   //disable_interrupt();
+  print_ram();
   kputs("[INFO] Init done\n");
 }
 int kmain(void)

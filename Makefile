@@ -7,7 +7,7 @@ AR = ar
 NASM = nasm
 OC = objcopy
 TOPDIR := ${PWD}
-CFLAGS = -O3 -ffreestanding -fno-stack-protector \
+CFLAGS = -ffreestanding -fno-stack-protector \
 							-mno-red-zone -Wall \
 							-mno-mmx -mno-sse -mno-sse2 -nostdlib \
 							-fno-plt -fno-pic -Wextra -I${TOPDIR}/include/
@@ -19,7 +19,7 @@ NASMFLAGS =
 
 SRC_BOOT = ${addprefix boot/,mbr.asm rmain.asm}
 SRC_INIT = ${addprefix init/,pmain.c}
-SRC_KERNEL_C = ${addprefix kernel/,interrupt.c kio.c kmain.c}
+SRC_KERNEL_C = ${addprefix kernel/,interrupt.c kio.c kmain.c e820.c}
 SRC_KERNEL_ASM = ${addprefix kernel/,intr.asm}
 SRC_DRIVERS_C = ${addprefix drivers/,vga.c pic.c timer8253.c}
 SRC_LIB_C = ${add prefix lib/,string.c}

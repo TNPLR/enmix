@@ -17,3 +17,10 @@ When the system boot, there are many steps to do.
 4. read all the message to registers than jump to kernel
 5. check for longmode
 6. set up paging at 0x1000
+
+## Memory
+0x200 ARDS Memory structure
+0x900 Real mode loader
+0x1000 ~ 0x9000 paging
+0x10000 init program
+0x100000 kernel

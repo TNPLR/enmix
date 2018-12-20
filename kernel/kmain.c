@@ -23,11 +23,11 @@ void print_ram(void)
   uint64_t mem = get_ram();
   kputs("[INFO] RAM size: ");
   kputuint(convert_ram_gib(mem), 10);
-  kputs(" Gib + ");
+  kputs(" GiB + ");
   kputuint(convert_ram_mib(mem) % 1024, 10);
-  kputs(" Mib + ");
+  kputs(" MiB + ");
   kputuint(convert_ram_kib(mem) % 1024, 10);
-  kputs(" Kib + ");
+  kputs(" KiB + ");
   kputuint(mem % 1024, 10);
   kputs(" Bytes\n");
 }

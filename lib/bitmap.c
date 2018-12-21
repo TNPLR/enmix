@@ -10,7 +10,7 @@ void bitmap_init(struct bitmap *btmp) {
 int bitmap_test(struct bitmap * btmp, uint64_t bit_idx)
 {
   uint64_t byte_idx = bit_idx / 8;
-  uint64_t bit = bit_idx % 8;
+  uint8_t bit = bit_idx % 8;
   return (btmp->bits[byte_idx] & (1 << bit));
 }
 
@@ -55,7 +55,7 @@ int bitmap_scan(struct bitmap * btmp, uint64_t cnt)
 void bitmap_set(struct bitmap * btmp, uint64_t bit_idx, int8_t value)
 {
   uint64_t byte_idx = bit_idx / 8;
-  uint64_t bit = bit_idx % 8;
+  uint8_t bit = bit_idx % 8;
   if (value) {
     btmp ->bits[byte_idx] |= (1 << bit);
   } else {

@@ -68,7 +68,7 @@ void timer_interrupt(uint64_t s)
 {
   if (++timer_int_count % 20 == 0) {
     kputuint(++sec_count,10);
-    kputs(" sec.\n");
+    kputs(" sec.\r");
     timer_int_count = 0;
   }
 }

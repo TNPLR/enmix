@@ -19,8 +19,10 @@ When the system boot, there are many steps to do.
 6. set up paging at 0x1000
 
 ## Memory
-0x200 ARDS Memory structure
-0x900 Real mode loader
-0x1000 ~ 0x9000 paging
-0x10000 init program
-0x100000 kernel
+0x200 ARDS Memory structure  
+0x900 Real mode loader  
+0x1000 ~ 0x9000 paging  
+0x10000 init program  
+0x100000 ~ 0x200000 kernel (0xc0100000 vaddr)  
+0x204000 kernel stack (0xc0204000 vaddr)  
+0x204000 ~ 0x208000 memory pool

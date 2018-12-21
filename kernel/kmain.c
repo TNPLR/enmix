@@ -4,6 +4,7 @@
 #include "vga.h"
 #include "interrupt.h"
 #include "e820.h"
+#include "memory.h"
 void init_data_segment()
 {
   asm volatile("movw %0, %%ax;"
@@ -42,6 +43,7 @@ void init_all(void)
   enable_interrupt();
   //disable_interrupt();
   print_ram();
+  mem_init();
   kputs("[INFO] Init done\n");
 }
 int kmain(void)

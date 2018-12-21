@@ -1,5 +1,14 @@
 #include <stdint.h>
 #include "mix.h"
+#define KERNEL_READ_ADDR 0x800000
+#define KERNEL_BIN_ADDR 0xc0000000U
+#define PAGE_SIZE 0x1000
+#define KERNEL_LOAD_ADDR 0x100000
+#define KERNEL_SIZE 4
+#define KERNEL_STACK 0xc0204000U
+const uint32_t PML4T = 0x1000;
+const uint32_t KERNEL_PDE = 0x6000;
+
 static inline uint32_t get_flags(void)
 {
   uint32_t ret_val;
@@ -70,9 +79,6 @@ static void set_cr3(uint32_t val)
 {
   asm volatile("movl %0, %%cr3"::"a"(val));
 }
-const uint32_t PML4T = 0x1000;
-const uint32_t KERNEL_PDE = 0x6000;
-#define PAGE_SIZE 0x1000
 static void setup_paging(void)
 {
   clear_mem((void *)PML4T, PAGE_SIZE * 5);
@@ -101,7 +107,6 @@ static void setup_paging(void)
   pputs("[INFO] Paging done\n");
 }
 
-#define KERNEL_LOAD_ADDR 0x100000
 static void kernel_paging(uint32_t kernel_mb_count)
 {
   clear_mem((void *)KERNEL_PDE, PAGE_SIZE * 3);
@@ -130,8 +135,6 @@ static void pmem_cpy(char *dst, char const *src, uint32_t size)
     *dst++ = *src++;
   }
 }
-#define KERNEL_READ_ADDR 0x800000
-#define KERNEL_BIN_ADDR 0xc0000000U
 static uint32_t copy_kernel(void)
 {
   uint32_t program_header = *(uint32_t *)(KERNEL_READ_ADDR+32);
@@ -172,10 +175,9 @@ static _Noreturn void jump_long(uint32_t entry)
 {
   pputs("[INFO] Jump to longmode\n");
   asm volatile("ljmp $0x20, $USELESS_LABEL;USELESS_LABEL:");
-  asm volatile("jmpl *%%eax"::"a"(entry));
+  asm volatile("movl %%edx, %%esp; jmpl *%%eax"::"d"(0xc0100000U),"a"(entry));
   __builtin_unreachable();
 }
-#define KERNEL_SIZE 2
 int pmain()
 {
   set_cursor(400);

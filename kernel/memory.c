@@ -2,10 +2,15 @@
 #include "kio.h"
 #include "e820.h"
 #include <stdint.h>
+#include <stddef.h>
 
 #define PG_SIZE 0x1000
 #define MEM_BITMAP_BASE 0xc0204000
 #define K_HEAP_START 0xc0400000
+#define PML4E_IDX(addr) (addr >> 39 & 0x1FF)
+#define PDPTE_IDX(addr) (addr >> 30 & 0x1FF)
+#define PDE_IDX(addr) (addr >> 21 & 0x1FF)
+#define PTE_IDX(addr) (addr >> 12 & 0x1FF)
 
 struct pool {
   struct bitmap pool_bitmap;
@@ -15,6 +20,59 @@ struct pool {
 
 struct pool kernel_pool, user_pool;
 struct virtual_addr kernel_vaddr;
+
+static void * vaddr_get(enum pool_flags pf, uint64_t pg_cnt)
+{
+  int64_t vaddr_start = 0, bit_idx_start = -1;
+  uint64_t cnt = 0;
+  if (pf == PF_KERNEL) {
+    bit_idx_start = bitmap_scan(&kernel_vaddr.vaddr_bitmap, pg_cnt);
+    if (bit_idx_start == -1) {
+      return NULL;
+    }
+    while (cnt < pg_cnt) {
+      bitmap_set(&kernel_vaddr.vaddr_bitmap, bit_idx_start + cnt++, 1);
+    }
+    vaddr_start = kernel_vaddr.vaddr_start + bit_idx_start * PG_SIZE;
+  } else {
+    // TODO: User Memory
+  }
+  return (void *)vaddr_start;
+}
+
+uint64_t * pml4e_ptr(uint64_t vaddr)
+{
+  uint64_t * pml4e =
+    (uint64_t *)((0xFFFFFFFFF000ULL) + PML4E_IDX(vaddr) * 8);
+  return pml4e;
+}
+
+uint64_t * pdpte_ptr(uint64_t vaddr)
+{
+  uint64_t * pdpte =
+    (uint64_t *)((0xFFFFFFE00000ULL) + 
+        ((vaddr & 0xFF8000000000ULL) >> 27) + PDPTE_IDX(vaddr) * 8);
+  return pdpte;
+}
+
+uint64_t * pde_ptr(uint64_t vaddr)
+{
+  uint64_t * pde =
+    (uint64_t *)((0xFFFFC0000000ULL) + 
+        ((vaddr & 0xFF8000000000ULL) >> 18) +
+        ((vaddr & 0x7FC0000000ULL) >> 18) + PDE_IDX(vaddr) * 8);
+  return pde;
+}
+
+uint64_t * pte_ptr(uint64_t vaddr)
+{
+  uint64_t * pte =
+    (uint64_t *)((0xFF8000000000ULL) + 
+        ((vaddr & 0xFF8000000000ULL) >> 9) +
+        ((vaddr & 0x7FC0000000ULL) >> 9) +
+        ((vaddr & 0x3FE00000ULL) >> 9) + PTE_IDX(vaddr) * 8);
+  return pte;
+}
 
 static void mem_pool_init(uint64_t all_mem)
 {
@@ -62,6 +120,76 @@ static void mem_pool_init(uint64_t all_mem)
   kernel_vaddr.vaddr_start = K_HEAP_START;
   bitmap_init(&kernel_vaddr.vaddr_bitmap);
   kputs("[INFO] Mem pool init done\n");
+}
+
+static void * palloc(struct pool * m_pool)
+{
+  int bit_idx = bitmap_scan(&m_pool->pool_bitmap, 1);
+  if (bit_idx == -1) {
+    return NULL;
+  }
+  bitmap_set(&m_pool->pool_bitmap, bit_idx, 1);
+  uint64_t page_phyaddr =
+    ((bit_idx * PG_SIZE) + m_pool->phy_addr_start);
+  return (void *)page_phyaddr;
+}
+
+static void pte_table_add(struct page_index pindex, uint64_t page_phyaddr)
+{
+  if (!(*pindex.pte & 0x1)) {
+    *pindex.pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+  } else {
+    kputs("[WARNIN] PTE repeat\n");
+    *pindex.pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+  }
+}
+
+static void pde_table_add(struct page_index pindex, uint64_t page_phyaddr)
+{
+  if (*pindex.pde & 0x1) {
+    pte_table_add(pindex, page_phyaddr);
+  } else {
+    // make a pde
+    uint64_t pde_phyaddr = (uint64_t)palloc(&kernel_pool);
+    *pindex.pde = (pde_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+    pte_table_add(pindex, page_phyaddr);
+  }
+}
+
+static void pdpte_table_add(struct page_index pindex, uint64_t page_phyaddr)
+{
+  if (*pindex.pdpte & 0x1) {
+    pde_table_add(pindex, page_phyaddr);
+  } else {
+    uint64_t pdpte_phyaddr = (uint64_t)palloc(&kernel_pool);
+    *pindex.pdpte = (pdpte_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+    pde_table_add(pindex, page_phyaddr);
+  }
+}
+
+static void pml4e_table_add(struct page_index pindex, uint64_t page_phyaddr)
+{
+  if (*pindex.pml4e & 0x1) {
+    pdpte_table_add(pindex, page_phyaddr);
+  } else {
+    // Add a new pdpte
+    uint64_t pml4e_phyaddr = (uint64_t)palloc(&kernel_pool);
+    *pindex.pml4e = (pml4e_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+    pdpte_table_add(pindex, page_phyaddr);
+  }
+}
+static void page_table_add(void * i_vaddr, void * i_page_phyaddr)
+{
+  uint64_t vaddr = (uint64_t)i_vaddr;
+  uint64_t page_phyaddr = (uint64_t)i_page_phyaddr;
+
+  struct page_index pindex;
+  pindex.pml4e = pml4e_ptr(vaddr);
+  pindex.pdpte = pdpte_ptr(vaddr);
+  pindex.pde = pde_ptr(vaddr);
+  pindex.pte = pte_ptr(vaddr);
+
+  pml4e_table_add(pindex, page_phyaddr);
 }
 
 void mem_init(void)

@@ -86,7 +86,7 @@ static void setup_paging(void)
   pputs("[INFO] CR3 Register set\n");
   *(uint32_t *)PML4T = PML4T + PAGE_SIZE + 0x7;
   // Loop last PML4E to PML4T itself
-  *(uint32_t *)(PML4T + 8 * 511) = PML4T + 0x7;
+  *(uint32_t *)(PML4T + 8 * 511) = PML4T + 0x3;
   *(uint32_t *)(PML4T + PAGE_SIZE) = PML4T + 2 * PAGE_SIZE + 0x7;
   // first mib
   *(uint32_t *)(PML4T + 2 * PAGE_SIZE) = PML4T + 3 * PAGE_SIZE + 0x7;
@@ -173,6 +173,7 @@ static void enable_paging(void)
       "movl %%eax, %%cr0"::"i"(1<<31):"ax");
   pputs("[INFO] Paging enabled\n");
 }
+static _Noreturn void jump_long(uint32_t entry) __attribute__((noreturn));
 static _Noreturn void jump_long(uint32_t entry)
 {
   pputs("[INFO] Jump to longmode\n");

@@ -7,10 +7,11 @@ AR = ar
 NASM = nasm
 OC = objcopy
 TOPDIR := ${PWD}
-CFLAGS = -ffreestanding -fno-stack-protector \
-							-mno-red-zone -Wall -std=gnu11 \
+CWARNFLAGS=-Wall -Wextra -Wpedantic
+CFLAGS = ${CWARNFLAGS} -ffreestanding -fno-stack-protector \
+							-mno-red-zone -std=gnu11 \
 							-mno-mmx -mno-sse -mno-sse2 -nostdlib \
-							-fno-plt -fno-pic -Wextra -I${TOPDIR}/include/
+							-fno-plt -fno-pic -I${TOPDIR}/include/
 CXXFLAGS =
 ASFLAGS =
 LDFLAGS =

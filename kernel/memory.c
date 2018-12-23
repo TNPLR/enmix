@@ -1,6 +1,7 @@
 #include "memory.h"
 #include "kio.h"
 #include "e820.h"
+#include "string.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -43,14 +44,14 @@ static void * vaddr_get(enum pool_flags pf, uint64_t pg_cnt)
 uint64_t * pml4e_ptr(uint64_t vaddr)
 {
   uint64_t * pml4e =
-    (uint64_t *)((0xFFFFFFFFF000ULL) + PML4E_IDX(vaddr) * 8);
+    (uint64_t *)((0xFFFFFFFFFFFFF000ULL) + PML4E_IDX(vaddr) * 8);
   return pml4e;
 }
 
 uint64_t * pdpte_ptr(uint64_t vaddr)
 {
   uint64_t * pdpte =
-    (uint64_t *)((0xFFFFFFE00000ULL) + 
+    (uint64_t *)((0xFFFFFFFFFFE00000ULL) + 
         ((vaddr & 0xFF8000000000ULL) >> 27) + PDPTE_IDX(vaddr) * 8);
   return pdpte;
 }
@@ -58,7 +59,7 @@ uint64_t * pdpte_ptr(uint64_t vaddr)
 uint64_t * pde_ptr(uint64_t vaddr)
 {
   uint64_t * pde =
-    (uint64_t *)((0xFFFFC0000000ULL) + 
+    (uint64_t *)((0xFFFFFFFFC0000000ULL) + 
         ((vaddr & 0xFF8000000000ULL) >> 18) +
         ((vaddr & 0x7FC0000000ULL) >> 18) + PDE_IDX(vaddr) * 8);
   return pde;
@@ -67,7 +68,7 @@ uint64_t * pde_ptr(uint64_t vaddr)
 uint64_t * pte_ptr(uint64_t vaddr)
 {
   uint64_t * pte =
-    (uint64_t *)((0xFF8000000000ULL) + 
+    (uint64_t *)((0xFFFFFF8000000000ULL) + 
         ((vaddr & 0xFF8000000000ULL) >> 9) +
         ((vaddr & 0x7FC0000000ULL) >> 9) +
         ((vaddr & 0x3FE00000ULL) >> 9) + PTE_IDX(vaddr) * 8);
@@ -190,6 +191,36 @@ static void page_table_add(void * i_vaddr, void * i_page_phyaddr)
   pindex.pte = pte_ptr(vaddr);
 
   pml4e_table_add(pindex, page_phyaddr);
+}
+
+void * malloc_page(enum pool_flags pf, uint64_t pg_cnt)
+{
+  void * vaddr_start = vaddr_get(pf, pg_cnt);
+  if (vaddr_start == NULL) {
+    return NULL;
+  }
+  uint64_t vaddr = (uint64_t)vaddr_start;
+  uint64_t cnt = pg_cnt;
+  struct pool * mem_pool = pf & PF_KERNEL ? &kernel_pool : &user_pool;
+
+  while (cnt-- > 0) {
+    void * page_phyaddr = palloc(mem_pool);
+    if (page_phyaddr == NULL) {
+      return NULL;
+    }
+    page_table_add((void *)vaddr, page_phyaddr);
+    vaddr += PG_SIZE;
+  }
+  return vaddr_start;
+}
+
+void * get_kernel_pages(uint64_t pg_cnt)
+{
+  void * vaddr = malloc_page(PF_KERNEL, pg_cnt);
+  if (vaddr != NULL) {
+    memset(vaddr, 0, pg_cnt + PG_SIZE);
+  }
+  return vaddr;
 }
 
 void mem_init(void)

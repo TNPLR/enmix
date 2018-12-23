@@ -17,11 +17,11 @@ gdt_addr:
     dd 0x80000007
     dd 0x00C0920B
   GDT_CODE_64:
-    dd 0x00000000
+    dd 0x0000FFFF
     dd 0x00AF9A00
   GDT_DATA_64:
-    dd 0x00000000
-    dd 0x00009200
+    dd 0x0000FFFF
+    dd 0x00AF9200
 gdt_end:
 GDT_SIZE equ gdt_end - gdt_addr
 GDT_LIMIT equ GDT_SIZE - 1
@@ -30,7 +30,7 @@ DATA_SELECTOR equ 0x10
 VIDEO_SELECTOR equ 0x18
 gdt_ptr:
   dw GDT_LIMIT
-  dd gdt_addr
+  dq gdt_addr
 loader_main:
   ; Print String
   mov ax, 0x1300

@@ -15,6 +15,8 @@ struct gate_desc {
   uint32_t reserved;
 };
 
+static const char * interrupt_str[256];
+
 static struct gate_desc idt[IDT_DESC_CNT];
 
 extern void *intr_entry_table[IDT_DESC_CNT];
@@ -40,6 +42,33 @@ static void idt_desc_init(void)
   kputs("[INFO] Interrupt set\n");
 }
 
+static void interrupt_str_init(void)
+{
+  for (int i = 0; i < 256; ++i) {
+    interrupt_str[i] = "Unknown";
+  }
+  interrupt_str[0] = "Divide Error";
+  interrupt_str[1] = "Debug Exception";
+  interrupt_str[2] = "NMI Interrupt";
+  interrupt_str[3] = "Breakpoint";
+  interrupt_str[4] = "Overflow";
+  interrupt_str[5] = "BOUND Range Exceeded";
+  interrupt_str[6] = "Invalid Opcode (Undefined Opcode)";
+  interrupt_str[7] = "Device Not Available (No Math Coprocessor)";
+  interrupt_str[8] = "Double Fault";
+  interrupt_str[10] = "Invalid TSS";
+  interrupt_str[11] = "Segment Not Present";
+  interrupt_str[12] = "Stack-Segment Fault";
+  interrupt_str[13] = "General Protection";
+  interrupt_str[14] = "Page Fault";
+  interrupt_str[16] = "x87 FPU Floating-Point Error (Math Fault)";
+  interrupt_str[17] = "Alignment Check";
+  interrupt_str[18] = "Machine Check";
+  interrupt_str[19] = "SIMD Floating-Point Exception";
+  interrupt_str[20] = "Virtualization Exception";
+  kputs("[INFO] Interrupt strings set\n");
+}
+
 struct idt_ptr {
   uint16_t size;
   uint64_t offset;
@@ -48,6 +77,7 @@ struct idt_ptr {
 void idt_init()
 {
   idt_desc_init();
+  interrupt_str_init();
   struct idt_ptr tmp_idtptr;
   tmp_idtptr.size = sizeof(idt)-1;
   tmp_idtptr.offset = (uint64_t)idt;
@@ -57,9 +87,11 @@ void idt_init()
 
 void general_interrupt(uint64_t s)
 {
-  kputs("Interrupt !! No");
-  kputc((s+0x41));
-  kputs(".....\n");
+  kputs("Interrupt! No. ");
+  kputuint(s, 10);
+  kputs("--");
+  kputs(interrupt_str[s%256]);
+  kputs("\n");
 }
 
 static uint8_t timer_int_count = 0;

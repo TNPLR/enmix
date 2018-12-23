@@ -12,7 +12,7 @@ void init_data_segment()
       "movw %%ax, %%es;"
       "movw %%ax, %%fs;"
       "movw %%ax, %%gs;"
-      "movw %%ax, %%ss;"::"i"(0x28):"ax");
+      "movw %%ax, %%ss;"::"i"(0x0):"ax");
 }
 void init_std_put()
 {
@@ -51,5 +51,11 @@ int kmain(void)
   init_all();
   kputs("[INFO] [64 BIT Mode] Kernel in 64 bits mode now\n");
   kputs("[INFO] Welcome to Miros\n");
+
+  void * addr = get_kernel_pages(3);
+  kputs("[INFO] Get kernel pages start vaddr is ");
+  kputuint((uint64_t)addr, 16);
+  kputs("\n");
   while (1);
+  return 0;
 }

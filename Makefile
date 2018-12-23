@@ -8,7 +8,7 @@ NASM = nasm
 OC = objcopy
 TOPDIR := ${PWD}
 CFLAGS = -ffreestanding -fno-stack-protector \
-							-mno-red-zone -Wall \
+							-mno-red-zone -Wall -std=gnu11 \
 							-mno-mmx -mno-sse -mno-sse2 -nostdlib \
 							-fno-plt -fno-pic -Wextra -I${TOPDIR}/include/
 CXXFLAGS =

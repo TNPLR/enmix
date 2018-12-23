@@ -48,9 +48,9 @@ init/pmain.o: init/pmain.c
 all: kernel.elf init.elf ${OBJ_BOOT}
 	dd if=/dev/zero of=./disk48M.hdd bs=512 count=98304
 	dd if=boot/mbr.bin of=./disk48M.hdd bs=512 count=1 conv=notrunc,sparse
-	dd if=boot/rmain.bin of=./disk48M.hdd bs=512 seek=1 count=8 conv=notrunc,sparse
-	dd if=init.elf of=./disk48M.hdd bs=512 seek=9 count=32 conv=notrunc,sparse
-	dd if=kernel.elf of=./disk48M.hdd bs=512 seek=41 count=4096 conv=notrunc,sparse
+	dd if=boot/rmain.bin of=./disk48M.hdd bs=512 seek=1 conv=notrunc,sparse
+	dd if=init.elf of=./disk48M.hdd bs=512 seek=9 conv=notrunc,sparse
+	dd if=kernel.elf of=./disk48M.hdd bs=512 seek=41 conv=notrunc,sparse
 clean: RM_TARGETS = ${addsuffix *.bin,boot/ init/ kernel/ drivers/ lib/}\
 										${addsuffix *.o,boot/ init/ kernel/ drivers/ lib/}
 clean:

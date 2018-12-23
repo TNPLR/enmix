@@ -22,11 +22,9 @@ intr_entry_table:
   push r13
   push r14
   push r15
-  push rsp
 %endmacro
 
 %macro popaq 0
-  pop rsp
   pop r15
   pop r14
   pop r13

@@ -5,6 +5,7 @@
 #include "interrupt.h"
 #include "e820.h"
 #include "memory.h"
+#include "thread.h"
 void init_data_segment()
 {
   asm volatile("movw %0, %%ax;"
@@ -46,6 +47,15 @@ void init_all(void)
   mem_init();
   kputs("[INFO] Init done\n");
 }
+
+void k_thread_s(void * args)
+{
+  const char * str = (const char *)args;
+  while (1) {
+    kputs(str);
+  }
+}
+
 int kmain(void)
 {
   init_all();
@@ -56,6 +66,13 @@ int kmain(void)
   kputs("[INFO] Get kernel pages start vaddr is ");
   kputuint((uint64_t)addr, 16);
   kputs("\n");
+  void * addr2 = get_kernel_pages(7);
+  kputs("[INFO] Get kernel pages start vaddr is ");
+  kputuint((uint64_t)addr2, 16);
+  kputs("\n");
+  kputuint(sizeof(struct task_struct), 10);
+  kputs("\n");
+  //thread_start("kthread", 31, k_thread_s, "Thread test\n");
   while (1);
   return 0;
 }

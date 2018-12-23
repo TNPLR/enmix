@@ -218,7 +218,7 @@ void * get_kernel_pages(uint64_t pg_cnt)
 {
   void * vaddr = malloc_page(PF_KERNEL, pg_cnt);
   if (vaddr != NULL) {
-    memset(vaddr, 0, pg_cnt + PG_SIZE);
+    memset(vaddr, 0, pg_cnt * PG_SIZE);
   }
   return vaddr;
 }

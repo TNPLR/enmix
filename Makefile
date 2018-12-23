@@ -20,7 +20,8 @@ NASMFLAGS =
 
 SRC_BOOT = ${addprefix boot/,mbr.asm rmain.asm}
 SRC_INIT = ${addprefix init/,pmain.c}
-SRC_KERNEL_C = ${addprefix kernel/,interrupt.c kio.c kmain.c e820.c memory.c}
+SRC_KERNEL_C = ${addprefix kernel/,interrupt.c kio.c \
+	kmain.c e820.c memory.c thread.c}
 SRC_KERNEL_ASM = ${addprefix kernel/,intr.asm}
 SRC_DRIVERS_C = ${addprefix drivers/,vga.c pic.c timer8253.c}
 SRC_LIB_C = ${addprefix lib/,string.c bitmap.c}

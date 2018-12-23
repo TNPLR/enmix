@@ -24,7 +24,7 @@ SRC_KERNEL_C = ${addprefix kernel/,interrupt.c kio.c \
 	kmain.c e820.c memory.c thread.c}
 SRC_KERNEL_ASM = ${addprefix kernel/,intr.asm}
 SRC_DRIVERS_C = ${addprefix drivers/,vga.c pic.c timer8253.c}
-SRC_LIB_C = ${addprefix lib/,string.c bitmap.c}
+SRC_LIB_C = ${addprefix lib/,string.c bitmap.c deque.c}
 OBJ_BOOT = ${SRC_BOOT:.asm=.bin}
 OBJ_INIT = ${SRC_INIT:.c=.o}
 OBJ_KERNEL_C = ${SRC_KERNEL_C:.c=.o} ${SRC_DRIVERS_C:.c=.o} ${SRC_LIB_C:.c=.o}

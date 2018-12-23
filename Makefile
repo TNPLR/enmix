@@ -30,9 +30,8 @@ OBJ_KERNEL_ASM = ${SRC_KERNEL_ASM:.asm=.o}
 
 .DEFAULT: DEFAULT
 DEFAULT: all
-.PHONY: start-test all clean img test
+.PHONY: start-test all clean img test mrproper
 start-test:
-all: img
 kernel.elf: CFLAGS+=-mcmodel=large
 kernel.elf: ${OBJ_KERNEL_C} ${OBJ_KERNEL_ASM}
 	${LD} ${LDFLAGS} -T kernel/kern.ld -o $@ $^
@@ -46,7 +45,8 @@ init/pmain.o: init/pmain.c
 	${NASM} ${NASMFLAGS} -f elf64 -o $@ $<
 %.bin: %.asm
 	${NASM} ${NASMFLAGS} -o $@ $< -i boot/
-img: kernel.elf init.elf ${OBJ_BOOT}
+all: kernel.elf init.elf ${OBJ_BOOT}
+	dd if=/dev/zero of=./disk48M.hdd bs=512 count=98304
 	dd if=boot/mbr.bin of=./disk48M.hdd bs=512 count=1 conv=notrunc
 	dd if=boot/rmain.bin of=./disk48M.hdd bs=512 seek=1 count=8 conv=notrunc
 	dd if=init.elf of=./disk48M.hdd bs=512 seek=9 count=32 conv=notrunc
@@ -55,5 +55,7 @@ clean: RM_TARGETS = ${addsuffix *.bin,boot/ init/ kernel/ drivers/ lib/}\
 										${addsuffix *.o,boot/ init/ kernel/ drivers/ lib/}
 clean:
 	rm -rf ${RM_TARGETS} *.elf
+mrproper:
+	rm -rf ${RM_TARGETS} *.elf *.hdd
 test:
 	bochs -f bochs.bx

@@ -1,5 +1,6 @@
 #include "timer8253.h"
 #include "cpuio.h"
+#include "interrupt.h"
 #include "kio.h"
 
 #define IRQ0_FREQUENCY 20

@@ -7,11 +7,12 @@ AR = ar
 NASM = nasm
 OC = objcopy
 TOPDIR := ${PWD}
-CWARNFLAGS=-Wall -Wextra -Wpedantic
+CWARNFLAGS= -Wall -Wextra -Wpedantic
+CADDRFLAGS= -fno-plt -fno-pic
 CFLAGS = ${CWARNFLAGS} -ffreestanding -fno-stack-protector \
 							-mno-red-zone -std=gnu11 \
 							-mno-mmx -mno-sse -mno-sse2 -nostdlib \
-							-fno-plt -fno-pic -I${TOPDIR}/include/
+							-I${TOPDIR}/include/ ${CADDRFLAGS}
 CXXFLAGS =
 ASFLAGS =
 LDFLAGS =
@@ -21,8 +22,8 @@ NASMFLAGS =
 SRC_BOOT = ${addprefix boot/,mbr.asm rmain.asm}
 SRC_INIT = ${addprefix init/,pmain.c}
 SRC_KERNEL_C = ${addprefix kernel/,interrupt.c kio.c \
-	kmain.c e820.c memory.c thread.c}
-SRC_KERNEL_ASM = ${addprefix kernel/,intr.asm}
+	kmain.c e820.c memory.c thread.c assert.c}
+SRC_KERNEL_ASM = ${addprefix kernel/,intr.asm switch.asm}
 SRC_DRIVERS_C = ${addprefix drivers/,vga.c pic.c timer8253.c}
 SRC_LIB_C = ${addprefix lib/,string.c bitmap.c deque.c}
 OBJ_BOOT = ${SRC_BOOT:.asm=.bin}
@@ -36,7 +37,7 @@ DEFAULT: all
 start-test:
 kernel.elf: CFLAGS+=-mcmodel=large
 kernel.elf: ${OBJ_KERNEL_C} ${OBJ_KERNEL_ASM}
-	${LD} ${LDFLAGS} -T kernel/kern.ld -o $@ $^
+	${CC} ${CFLAGS} -T kernel/kern.ld -o $@ $^
 init.elf: CFLAGS += -m32
 init.elf: ${OBJ_INIT}
 	${LD} ${LDFLAGS} -T init/init.ld -o $@ ${OBJ_INIT}

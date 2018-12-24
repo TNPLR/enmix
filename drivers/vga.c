@@ -46,7 +46,8 @@ static uint16_t get_cursor(void)
   cursor |= kinb(0x3d5);
   return cursor;
 }
-static void set_cursor(uint16_t cursor)
+// TODO CHANGE PAGE
+void set_cursor(uint16_t cursor)
 {
   koutb(0x3d4, 0x0e);
   koutb(0x3d5, cursor >> 8);

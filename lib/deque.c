@@ -1,7 +1,7 @@
 #include "deque.h"
 #include "interrupt.h"
 #include <stddef.h>
-void list_init(struct deque * deq)
+void deque_init(struct deque * deq)
 {
   deq->first.prev = NULL;
   deq->first.next = &deq->last;
@@ -24,7 +24,7 @@ void deque_push_front(struct deque * deq, struct deque_node * node)
   deque_insert(deq->first.next, node);
 }
 
-void deque_push_bask(struct deque * deq, struct deque_node * node)
+void deque_push_back(struct deque * deq, struct deque_node * node)
 {
   deque_insert(&deq->last, node);
 }
@@ -34,7 +34,7 @@ struct deque_node * deque_pop_front(struct deque * deq)
   return deque_remove(deq->first.next);
 }
 
-struct deque_node * deque_pop_bask(struct deque * deq)
+struct deque_node * deque_pop_back(struct deque * deq)
 {
   return deque_remove(deq->last.prev);
 }

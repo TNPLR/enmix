@@ -8,7 +8,7 @@ struct deque {
   struct deque_node first;
   struct deque_node last;
 };
-void list_init(struct deque * deque);
+void deque_init(struct deque * deque);
 
 void deque_push_front(struct deque * deque, struct deque_node * node);
 void deque_push_back(struct deque * deque, struct deque_node * node);

@@ -151,3 +151,10 @@ void disable_interrupt(void)
 {
   asm volatile("cli");
 }
+
+int get_interrupt(void)
+{
+  uint64_t ret;
+  asm volatile("pushfq; popq %%rax":"=a"(ret));
+  return (int)ret & 0x200;
+}

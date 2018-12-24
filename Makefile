@@ -37,7 +37,7 @@ DEFAULT: all
 start-test:
 kernel.elf: CFLAGS+=-mcmodel=large
 kernel.elf: ${OBJ_KERNEL_C} ${OBJ_KERNEL_ASM}
-	${CC} ${CFLAGS} -T kernel/kern.ld -o $@ $^
+	${LD} ${LDFLAGS} -T kernel/kern.ld -o $@ $^
 init.elf: CFLAGS += -m32
 init.elf: ${OBJ_INIT}
 	${LD} ${LDFLAGS} -T init/init.ld -o $@ ${OBJ_INIT}

@@ -41,14 +41,15 @@ void init_all(void)
   pic_init();
   idt_init();
   timer8253_init();
-  enable_interrupt();
   //disable_interrupt();
   print_ram();
   mem_init();
+  thread_sys_init();
+  enable_interrupt();
   kputs("[INFO] Init done\n");
 }
 
-void k_thread_s(void * args)
+void k_thread_a(void * args)
 {
   const char * str = (const char *)args;
   while (1) {
@@ -72,7 +73,8 @@ int kmain(void)
   kputs("\n");
   kputuint(sizeof(struct task_struct), 10);
   kputs("\n");
-  //thread_start("kthread", 31, k_thread_s, "Thread test\n");
+  thread_start("kthread", 31, k_thread_a, "Thread test ==============\n");
+  thread_start("kthread2", 31, k_thread_a, "===============Test\n");
   while (1);
   return 0;
 }

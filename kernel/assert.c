@@ -15,9 +15,10 @@ void error_wall(const char *filename,
   kputuint(line, 10);
   kputs("\nFUNCTION: ");
   kputs(func);
-  kputs("CONDITION: ");
+  kputs("\nCONDITION: ");
   kputs(condition);
   kputs("\n**************************************************\n");
   kputs("[EMERG] ASSERTION MASSAGE END\n");
   kputs("**************************************************\n");
+  while (1);
 }

@@ -11,12 +11,17 @@ void deque_init(struct deque * deq)
 
 void deque_insert(struct deque_node * dest, struct deque_node * src)
 {
-  disable_interrupt();
+  int int_status = 0;
+  if ((int_status = get_interrupt())) {
+    disable_interrupt();
+  }
   dest->prev->next = src;
   src->prev = dest->prev;
   src->next = dest;
   dest->prev = src;
-  enable_interrupt();
+  if (int_status) {
+    enable_interrupt();
+  }
 }
 
 void deque_push_front(struct deque * deq, struct deque_node * node)

@@ -62,3 +62,14 @@ int deque_empty(struct deque * deq)
 {
   return deq->first.next == &deq->last;
 }
+
+int deque_exist(struct deque * deq, struct deque_node * node)
+{
+  struct deque_node tmp_node = deq->first;
+  while (tmp_node.next != NULL) {
+    if (&tmp_node == node) {
+      return 1;
+    }
+  }
+  return 0;
+}

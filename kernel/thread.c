@@ -95,10 +95,8 @@ void schedule(void)
     cur->ticks = cur->priority;
     cur->status = TASK_READY;
   } else {
-    // nothing
+    // do nothing
   }
-  ASSERT(!deque_empty(&thread_ready_deque));
-  thread_tag = NULL;
   thread_tag = deque_pop_front(&thread_ready_deque);
   struct task_struct * next = NODE_ENTRY(struct task_struct,
       general_tag, thread_tag);
@@ -113,4 +111,36 @@ void thread_sys_init(void)
   deque_init(&thread_all_deque);
   make_main_thread();
   kputs("[INFO] Thread init done\n");
+}
+
+void block_thread(enum task_status status)
+{
+  int int_status = get_interrupt();
+  if (int_status) {
+    disable_interrupt();
+  }
+  struct task_struct * current_thread = running_thread();
+  current_thread->status = status;
+  schedule();
+  if (int_status) {
+    enable_interrupt();
+  }
+}
+
+void unblock_thread(struct task_struct * thread)
+{
+  int int_status = get_interrupt();
+  if (int_status) {
+    disable_interrupt();
+  }
+  if (thread->status != TASK_READY) {
+    if (deque_exist(&thread_ready_deque, &thread->general_tag)) {
+      ERROR_WALL("[ERR] unlock_thread error: it is in ready list!\n");
+    }
+    deque_push_front(&thread_ready_deque, &thread->general_tag);
+    thread->status = TASK_READY;
+  }
+  if (int_status) {
+    enable_interrupt();
+  }
 }

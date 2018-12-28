@@ -22,4 +22,7 @@ struct deque_node * deque_remove(struct deque_node * node);
 void deque_insert(struct deque_node * dest, struct deque_node * src);
 
 int deque_empty(struct deque * deque);
+
+// check if the node is in the deque
+int deque_exist(struct deque * deq, struct deque_node * node);
 #endif

@@ -53,7 +53,9 @@ void k_thread_a(void * args)
 {
   const char * str = (const char *)args;
   while (1) {
+    disable_interrupt();
     kputs(str);
+    enable_interrupt();
   }
 }
 
@@ -73,7 +75,8 @@ int kmain(void)
   kputs("\n");
   kputuint(sizeof(struct task_struct), 10);
   kputs("\n");
-  thread_start("kthread", 31, k_thread_a, "ILXYZ\n");
+  thread_start("kthread", 8, k_thread_a, "THRA ");
+  thread_start("kthr", 31, k_thread_a, "THRB ");
   kputs("[DEBUG] Thread start done\n");
   enable_interrupt();
   while (1);

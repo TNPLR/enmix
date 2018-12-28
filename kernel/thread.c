@@ -102,9 +102,6 @@ void schedule(void)
   thread_tag = deque_pop_front(&thread_ready_deque);
   struct task_struct * next = NODE_ENTRY(struct task_struct,
       general_tag, thread_tag);
-  kputs("[DEBUG] Schedule: 0x");
-  kputuint(next->stack_magic, 16);
-  kputs("\n");
   next->status = TASK_RUNNING;
   switch_to(cur, next);
 }

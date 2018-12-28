@@ -50,13 +50,13 @@ intr%1entry:
   pushaq
   mov rdi, %1
   mov rsi, [rsp + 120] ;error code
+  mov al, 0x20
+  out 0xa0, al
+  out 0x20, al
   extern idt_func_table
   ;call [idt_func_table + %1 * 8]
   extern %3
   call %3
-  mov al, 0x20
-  out 0xa0, al
-  out 0x20, al
   jmp intr_ret
 
 section .data

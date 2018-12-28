@@ -6,6 +6,7 @@
 #include "e820.h"
 #include "memory.h"
 #include "thread.h"
+#include "assert.h"
 void init_data_segment()
 {
   asm volatile("movw %0, %%ax;"
@@ -45,7 +46,6 @@ void init_all(void)
   print_ram();
   mem_init();
   thread_sys_init();
-  enable_interrupt();
   kputs("[INFO] Init done\n");
 }
 
@@ -73,8 +73,9 @@ int kmain(void)
   kputs("\n");
   kputuint(sizeof(struct task_struct), 10);
   kputs("\n");
-  thread_start("kthread", 31, k_thread_a, "Thread test ==============\n");
-  thread_start("kthread2", 31, k_thread_a, "===============Test\n");
+  thread_start("kthread", 31, k_thread_a, "ILXYZ\n");
+  kputs("[DEBUG] Thread start done\n");
+  enable_interrupt();
   while (1);
   return 0;
 }

@@ -37,8 +37,6 @@ void thread_create(struct task_struct * pthread,
   pthread->task_stack -= sizeof(struct thread_stack) / 8;
   struct thread_stack * kthread_stack = (struct thread_stack *)pthread->task_stack;
   kthread_stack->rip = kernel_thread;
-  kthread_stack->func = func;
-  kthread_stack->args = args;
 
   kthread_stack->rbx = 0;
   kthread_stack->rbp = 0;
@@ -46,6 +44,8 @@ void thread_create(struct task_struct * pthread,
   kthread_stack->r13 = 0;
   kthread_stack->r14 = 0;
   kthread_stack->r15 = 0;
+  kthread_stack->rdi = (uint64_t)func;
+  kthread_stack->rsi = (uint64_t)args;
 }
 
 void init_thread(struct task_struct * pthread, const char *name, int priority)
@@ -102,6 +102,9 @@ void schedule(void)
   thread_tag = deque_pop_front(&thread_ready_deque);
   struct task_struct * next = NODE_ENTRY(struct task_struct,
       general_tag, thread_tag);
+  kputs("[DEBUG] Schedule: 0x");
+  kputuint(next->stack_magic, 16);
+  kputs("\n");
   next->status = TASK_RUNNING;
   switch_to(cur, next);
 }

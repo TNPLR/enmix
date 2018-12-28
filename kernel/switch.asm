@@ -2,6 +2,8 @@
 section .text
 global switch_to
 switch_to:
+  push rsi
+  push rdi
   push r15
   push r14
   push r13
@@ -11,7 +13,6 @@ switch_to:
 
   mov rax, rdi ; cur
   mov [rax], rsp ; save stack
-
   ; back up
 
   mov rax, rsi
@@ -22,4 +23,6 @@ switch_to:
   pop r13
   pop r14
   pop r15
+  pop rdi
+  pop rsi
   ret

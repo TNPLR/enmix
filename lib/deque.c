@@ -11,8 +11,8 @@ void deque_init(struct deque * deq)
 
 void deque_insert(struct deque_node * dest, struct deque_node * src)
 {
-  int int_status = 0;
-  if ((int_status = get_interrupt())) {
+  int int_status = get_interrupt();
+  if (int_status) {
     disable_interrupt();
   }
   dest->prev->next = src;
@@ -46,10 +46,15 @@ struct deque_node * deque_pop_back(struct deque * deq)
 
 struct deque_node * deque_remove(struct deque_node * node)
 {
+  int int_status = get_interrupt();
+  if (int_status) {
+    disable_interrupt();
+  }
   node->prev->next = node->next; 
   node->next->prev = node->prev;
-  node->prev = NULL;
-  node->next = NULL;
+  if (int_status) {
+    enable_interrupt();
+  }
   return node;
 }
 

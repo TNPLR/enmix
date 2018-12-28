@@ -20,7 +20,7 @@ struct gate_desc {
 };
 
 static const char * interrupt_str[256];
-void general_interrupt(uint64_t s)
+void general_interrupt(uint64_t s, uint64_t err)
 {
   if (s == 0x27 || s == 0x2f) {
     return;
@@ -39,14 +39,16 @@ void general_interrupt(uint64_t s)
     kputs("\nPAGE_FAULT_ADDR = 0x");
     kputuint(page_fault_vaddr, 16);
   }
-  kputs("**************************************************\n");
+  kputs("\nError Number: 0x");
+  kputuint(err, 16);
+  kputs("\n**************************************************\n");
   kputs("[EMERG] EXCEPTION MASSAGE END\n");
   kputs("**************************************************\n");
   while (1);
 }
 
 //void (*idt_func_table[256])(uint64_t) = {general_interrupt};
-void (*idt_func_table[256])(uint64_t) = {general_interrupt};
+void (*idt_func_table[256])(uint64_t,uint64_t) = {general_interrupt};
 static struct gate_desc idt[IDT_DESC_CNT];
 
 extern void *intr_entry_table[IDT_DESC_CNT];
@@ -99,7 +101,7 @@ static void interrupt_str_init(void)
   kputs("[INFO] Interrupt strings set\n");
 }
 
-void setup_handler(uint8_t int_no, void (*func)(uint64_t s))
+void setup_handler(uint8_t int_no, void (*func)(uint64_t,uint64_t))
 {
   idt_func_table[int_no] = func;
 }
@@ -110,7 +112,7 @@ struct idt_ptr {
 } __attribute__((packed));
 
 static uint64_t tick;
-static void timer_interrupt(uint64_t s)
+void timer_interrupt(void)
 {
   struct task_struct * cur_thread = running_thread();
   ASSERT(cur_thread->stack_magic == 0x52735273);
@@ -126,7 +128,7 @@ static void timer_interrupt(uint64_t s)
 
 static void init_handler_function(void)
 {
-  setup_handler(0x20, timer_interrupt);
+  setup_handler(0x20, (void (*)(uint64_t, uint64_t))timer_interrupt);
   kputs("[INFO] Init all the interrupt handler functions\n");
 }
 

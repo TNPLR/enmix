@@ -35,7 +35,7 @@ OBJ_KERNEL_ASM = ${SRC_KERNEL_ASM:.asm=.o}
 DEFAULT: all
 .PHONY: start-test all clean img test mrproper
 start-test:
-kernel.elf: CFLAGS+=-mcmodel=large
+kernel.elf: CFLAGS+=-mcmodel=large -m64
 kernel.elf: ${OBJ_KERNEL_C} ${OBJ_KERNEL_ASM}
 	${LD} ${LDFLAGS} -T kernel/kern.ld -o $@ $^
 init.elf: CFLAGS += -m32

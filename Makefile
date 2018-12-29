@@ -12,7 +12,7 @@ CADDRFLAGS= -fno-plt -fno-pic
 CFLAGS = ${CWARNFLAGS} -ffreestanding -fno-stack-protector \
 							-mno-red-zone -std=gnu11 \
 							-mno-mmx -mno-sse -mno-sse2 -nostdlib \
-							-I${TOPDIR}/include/ ${CADDRFLAGS}
+							-I${TOPDIR}/include/ ${CADDRFLAGS} -O0
 CXXFLAGS =
 ASFLAGS =
 LDFLAGS =
@@ -24,7 +24,7 @@ SRC_INIT = ${addprefix init/,pmain.c}
 SRC_KERNEL_C = ${addprefix kernel/,interrupt.c kio.c \
 	kmain.c e820.c memory.c thread.c assert.c}
 SRC_KERNEL_ASM = ${addprefix kernel/,intr.asm switch.asm}
-SRC_DRIVERS_C = ${addprefix drivers/,vga.c pic.c timer8253.c}
+SRC_DRIVERS_C = ${addprefix drivers/,vga.c pic.c timer8253.c tty.c}
 SRC_LIB_C = ${addprefix lib/,string.c bitmap.c deque.c mutex_lock.c}
 OBJ_BOOT = ${SRC_BOOT:.asm=.bin}
 OBJ_INIT = ${SRC_INIT:.c=.o}

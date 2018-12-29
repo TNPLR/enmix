@@ -2,6 +2,7 @@
 #include "thread.h"
 #include "interrupt.h"
 #include "deque.h"
+#include "assert.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -28,10 +29,14 @@ void semaphore_p(struct semaphore * sema)
   }
   while (!sema->value) {
     /* Current thread should not be in standby deque */
+    if (deque_exist(&sema->standby, &running_thread()->general_tag)) {
+      ERROR_WALL("[ERR] Current thread shouldn't be in standby deque\n");
+    }
     deque_push_back(&sema->standby, &running_thread()->general_tag);
     block_thread(TASK_BLOCKED);
   }
   --sema->value;
+  ASSERT(sema->value == 0);
   if (int_status) {
     enable_interrupt();
   }
@@ -43,6 +48,7 @@ void semaphore_v(struct semaphore * sema)
   if (int_status) {
     disable_interrupt();
   }
+  ASSERT(sema->value == 0);
   if (!deque_empty(&sema->standby)) {
     struct task_struct * thread_blocked =
       NODE_ENTRY(struct task_struct, general_tag,
@@ -50,6 +56,7 @@ void semaphore_v(struct semaphore * sema)
     unblock_thread(thread_blocked);
   }
   ++sema->value;
+  ASSERT(sema->value == 1);
   if (int_status) {
     enable_interrupt();
   }
@@ -60,6 +67,7 @@ void mutex_lock_get(struct mutex_lock * lock)
   if (lock->owner != running_thread()) {
     semaphore_p(&lock->semaphore);
     lock->owner = running_thread();
+    ASSERT(lock->owner_request_count == 0);
     lock->owner_request_count = 1;
   } else {
     ++lock->owner_request_count;
@@ -68,11 +76,13 @@ void mutex_lock_get(struct mutex_lock * lock)
 
 void mutex_lock_release(struct mutex_lock * lock)
 {
+  ASSERT(lock->owner == running_thread());
   if (lock->owner_request_count > 1) {
     --lock->owner_request_count;
     return;
   }
+  ASSERT(lock->owner_request_count == 1);
   lock->owner = NULL;
-  --lock->owner_request_count;
+  lock->owner_request_count = 0;
   semaphore_v(&lock->semaphore);
 }

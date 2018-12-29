@@ -2,6 +2,9 @@
 #define MEMORY_H_
 #include "bitmap.h"
 #include <stdint.h>
+// page executive-disable
+#define PG_XD_1 0x8000000000000000ULL
+#define PG_XD_0 0
 // Page present
 #define PG_P_1 1
 #define PG_P_0 0
@@ -31,4 +34,6 @@ extern struct pool kernel_pool, user_pool;
 void mem_init(void);
 void * malloc_page(enum pool_flags pf, uint64_t pg_cnt);
 void * get_kernel_pages(uint64_t pg_cnt);
+void enable_no_execute(void);
+void disable_no_execute(void);
 #endif

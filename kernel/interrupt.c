@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include "assert.h"
 #define INTERRUPT_DESC_SETTING 0x8E
+#define INTER
 #define IDT_DESC_CNT 0x21
 #define CODE_64_SELECTOR 0x20
 struct gate_desc {
@@ -58,11 +59,11 @@ static struct gate_desc idt[IDT_DESC_CNT];
 extern void *intr_entry_table[IDT_DESC_CNT];
 
 static void make_idt_desc(struct gate_desc *idt_gate,
-    uint8_t setting, void *function)
+    uint8_t setting, void *function, uint8_t ist)
 {
   idt_gate->offset_low16 = (uint64_t)function & 0xFFFF;
   idt_gate->segment_selector = CODE_64_SELECTOR;
-  idt_gate->ist = 0;
+  idt_gate->ist = ist & 0x7;
   idt_gate->zero = 0;
   idt_gate->setting = setting;
   idt_gate->offset_midlow16 = ((uint64_t)function >> 16) & 0xFFFF;
@@ -73,7 +74,7 @@ static void make_idt_desc(struct gate_desc *idt_gate,
 static void idt_desc_init(void)
 {
   for (int i = 0; i < IDT_DESC_CNT; ++i) {
-    make_idt_desc(&idt[i],INTERRUPT_DESC_SETTING,intr_entry_table[i]);
+    make_idt_desc(&idt[i],INTERRUPT_DESC_SETTING,intr_entry_table[i],0);
   }
   kputs("[INFO] Interrupt set\n");
 }
@@ -146,4 +147,21 @@ void idt_init()
   tmp_idtptr.offset = (uint64_t)idt;
   asm volatile("lidt %0"::"m"(tmp_idtptr));
   kputs("[INFO] idt_init done\n");
+}
+
+void enable_interrupt(void)
+{
+  asm volatile("sti");
+}
+
+void disable_interrupt(void)
+{
+  asm volatile("cli");
+}
+
+int get_interrupt(void)
+{
+  uint64_t ret;
+  asm volatile("pushfq; popq %%rax":"=a"(ret));
+  return (int)ret & 0x200;
 }

@@ -124,7 +124,7 @@ void block_thread(enum task_status status)
   }
   struct task_struct * current_thread = running_thread();
   current_thread->status = status;
-  schedule();
+  schedule(); // blocking, so give the cpu to others
   if (int_status) {
     enable_interrupt();
   }

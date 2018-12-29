@@ -1,4 +1,5 @@
 #include "kio.h"
+#include "tty.h"
 #include "timer8253.h"
 #include "pic.h"
 #include "vga.h"
@@ -18,8 +19,8 @@ void init_data_segment()
 }
 void init_std_put()
 {
-  set_kputc(vga_putc);
-  kputs("[INFO] Putc set\n");
+  set_kputc(tty_putc);
+  set_kputs(tty_puts);
 }
 void print_ram(void)
 {
@@ -37,7 +38,10 @@ void print_ram(void)
 void init_all(void)
 {
   init_std_put();
+  tty_init();
   kputs("[INFO] Init start\n");
+  kputs("[INFO] STDOUT init\n");
+  kputs("[INFO] TTY init\n");
   init_data_segment();
   pic_init();
   idt_init();
@@ -53,9 +57,7 @@ void k_thread_a(void * args)
 {
   const char * str = (const char *)args;
   while (1) {
-    disable_interrupt();
     kputs(str);
-    enable_interrupt();
   }
 }
 
@@ -75,10 +77,12 @@ int kmain(void)
   kputs("\n");
   kputuint(sizeof(struct task_struct), 10);
   kputs("\n");
-  thread_start("kthread", 8, k_thread_a, "FIRS ");
+  thread_start("kthread", 15, k_thread_a, "FIRS ");
   thread_start("kthr", 31, k_thread_a, "SECO ");
   kputs("[DEBUG] Thread start done\n");
   enable_interrupt();
-  while (1);
+  while (1) {
+    kputs("MAIN ");
+  }
   return 0;
 }

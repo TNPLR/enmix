@@ -60,16 +60,17 @@ struct deque_node * deque_remove(struct deque_node * node)
 
 int deque_empty(struct deque * deq)
 {
-  return deq->first.next == &deq->last;
+  return (deq->first.next == &deq->last);
 }
 
 int deque_exist(struct deque * deq, struct deque_node * node)
 {
-  struct deque_node tmp_node = deq->first;
-  while (tmp_node.next != NULL) {
-    if (&tmp_node == node) {
+  struct deque_node * tmp_node = deq->first.next;
+  while (tmp_node != &deq->last) {
+    if (tmp_node == node) {
       return 1;
     }
+    tmp_node = tmp_node->next;
   }
   return 0;
 }

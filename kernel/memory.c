@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 #define PG_SIZE 0x1000
-#define MEM_BITMAP_BASE 0xc0204000
+#define MEM_BITMAP_BASE 0xc0208000
 #define K_HEAP_START 0xc0400000
 #define PML4E_IDX(addr) (addr >> 39 & 0x1FF)
 #define PDPTE_IDX(addr) (addr >> 30 & 0x1FF)
@@ -138,10 +138,11 @@ static void * palloc(struct pool * m_pool)
 static void pte_table_add(struct page_index pindex, uint64_t page_phyaddr)
 {
   if (!(*pindex.pte & 0x1)) {
-    *pindex.pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+    *pindex.pte = (PG_XD_1 | page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+    //*pindex.pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
   } else {
     kputs("[WARNIN] PTE repeat\n");
-    *pindex.pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+    *pindex.pte = (PG_XD_1 | page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
   }
 }
 
@@ -223,9 +224,38 @@ void * get_kernel_pages(uint64_t pg_cnt)
   return vaddr;
 }
 
+void enable_no_execute(void)
+{
+  asm volatile("rdmsr; orq %0, %%rax; wrmsr"::"i"(1<<11),"c"(0xC0000080):"ax");
+  kputs("[INFO] No-execute enable\n");
+}
+
+void disable_no_execute(void)
+{
+  asm volatile("rdmsr; orq %0, %%rax; wrmsr"
+      ::"i"(0xFFFFFFFFFFFFFFFFULL ^ (1<<11)),"c"(0xC0000080):"ax");
+  kputs("[INFO] No-execute disable\n");
+}
+static void low_mb_no_execute(void)
+{
+  uint64_t * tmp_ptr = pde_ptr(0x0);
+  for (int i = 0; i < 256; ++i) {
+    *tmp_ptr |= PG_XD_1;
+    ++tmp_ptr;
+  }
+  kputs("[INFO] First MB now No-Execute\n");
+}
+static void init_no_execute(void)
+{
+  enable_no_execute();
+  kputs("[INFO] Enable No-Execute done\n");
+}
+
 void mem_init(void)
 {
   kputs("[INFO] Mem init start\n");
   mem_pool_init(get_ram());
+  low_mb_no_execute();
+  init_no_execute();
   kputs("[INFO] Mem init done\n");
 }

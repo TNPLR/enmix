@@ -2,16 +2,14 @@
 #include "vga.h"
 #include "kio.h"
 void (*kputc)(char const);
+void (*kputs)(char const *);
 void set_kputc(void (*inputc)(char const))
 {
   kputc = inputc;
 }
-void kputs(char const *s)
+void set_kputs(void (*inputs)(char const *))
 {
-  while(*s) {
-    kputc(*s);
-    ++s;
-  }
+  kputs = inputs;
 }
 
 void kputuint(uintmax_t num, unsigned base)

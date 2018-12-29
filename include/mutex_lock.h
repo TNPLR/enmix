@@ -15,4 +15,8 @@ struct mutex_lock {
 
 void semaphore_init(struct semaphore * sema, uint_fast8_t value);
 void mutex_lock_init(struct mutex_lock * lock);
+void semaphore_p(struct semaphore * sema);
+void semaphore_v(struct semaphore * sema);
+void mutex_lock_get(struct mutex_lock * lock);
+void mutex_lock_release(struct mutex_lock * lock);
 #endif /* MUTEX_LOCK_H_ */

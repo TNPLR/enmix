@@ -1,5 +1,8 @@
 #ifndef DEQUE_H_
 #define DEQUE_H_
+#define offset(type, member) (intptr_t)(&((type *)0)->member)
+#define NODE_ENTRY(struct_type, member_name, ptr) \
+  (struct_type *)((intptr_t)ptr - offset(struct_type, member_name))
 struct deque_node {
   struct deque_node * prev;
   struct deque_node * next;

@@ -26,6 +26,10 @@ void general_interrupt(uint64_t s, uint64_t err)
     return;
   } // fake interrupt
   set_cursor(0);
+  for (int i = 0; i < 20; ++i) {
+    kputs("                                                  \n");
+  }
+  set_cursor(0);
   kputs("**************************************************\n");
   kputs("[EMERG] EXCEPTION MASSAGE\n");
   kputs("**************************************************\n");
@@ -142,21 +146,4 @@ void idt_init()
   tmp_idtptr.offset = (uint64_t)idt;
   asm volatile("lidt %0"::"m"(tmp_idtptr));
   kputs("[INFO] idt_init done\n");
-}
-
-void enable_interrupt(void)
-{
-  asm volatile("sti");
-}
-
-void disable_interrupt(void)
-{
-  asm volatile("cli");
-}
-
-int get_interrupt(void)
-{
-  uint64_t ret;
-  asm volatile("pushfq; popq %%rax":"=a"(ret));
-  return (int)ret & 0x200;
 }

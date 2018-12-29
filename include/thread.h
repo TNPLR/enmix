@@ -2,9 +2,6 @@
 #define THREAD_H_
 #include "deque.h"
 #include <stdint.h>
-#define offset(type, member) (intptr_t)(&((type *)0)->member)
-#define NODE_ENTRY(struct_type, member_name, ptr) \
-  (struct_type *)((intptr_t)ptr - offset(struct_type, member_name))
 
 enum task_status {
   TASK_RUNNING,
@@ -76,4 +73,6 @@ void init_thread(struct task_struct *, const char *, int);
 struct task_struct * thread_start(const char *, int, void (*)(void *), void *);
 void schedule(void);
 void thread_sys_init(void);
+void block_thread(enum task_status status);
+void unblock_thread(struct task_struct * thread);
 #endif

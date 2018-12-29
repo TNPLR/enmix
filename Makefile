@@ -48,8 +48,9 @@ init/pmain.o: init/pmain.c
 	${NASM} ${NASMFLAGS} -f elf64 -o $@ $<
 %.bin: %.asm
 	${NASM} ${NASMFLAGS} -o $@ $< -i boot/
-all: kernel.elf init.elf ${OBJ_BOOT}
+disk48M.hdd:
 	dd if=/dev/zero of=./disk48M.hdd bs=512 count=98304
+all: disk48M.hdd kernel.elf init.elf ${OBJ_BOOT}
 	dd if=boot/mbr.bin of=./disk48M.hdd bs=512 count=1 conv=notrunc,sparse
 	dd if=boot/rmain.bin of=./disk48M.hdd bs=512 seek=1 conv=notrunc,sparse
 	dd if=init.elf of=./disk48M.hdd bs=512 seek=9 conv=notrunc,sparse

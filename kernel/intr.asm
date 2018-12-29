@@ -1,5 +1,4 @@
 [bits 64]
-DEFAULT REL
 %define ERROR_CODE nop
 %define ZERO push 0
 

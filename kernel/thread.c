@@ -16,6 +16,7 @@ struct deque thread_all_deque;
 static struct deque_node * thread_tag;
 
 extern void switch_to(struct task_struct * cur, struct task_struct * next);
+extern void entry_kernel_thread(void (*)(void *), void *);
 
 struct task_struct * running_thread(void)
 {
@@ -24,7 +25,7 @@ struct task_struct * running_thread(void)
   return (struct task_struct *)(rsp & 0xfffffffffffff000ULL);
 }
 
-static void kernel_thread(void (*func)(void *), void * args)
+void kernel_thread(void (*func)(void *), void * args)
 {
   enable_interrupt();
   func(args);
@@ -34,9 +35,13 @@ void thread_create(struct task_struct * pthread,
     void (*func)(void *), void * args)
 {
   pthread->task_stack -= sizeof(struct interrupt_stack) / 8;
+  struct interrupt_stack * kint_stack =
+    (struct interrupt_stack *)pthread->task_stack;
+  kint_stack->rdi = (uint64_t)func;
+  kint_stack->rsi = (uint64_t)args;
   pthread->task_stack -= sizeof(struct thread_stack) / 8;
   struct thread_stack * kthread_stack = (struct thread_stack *)pthread->task_stack;
-  kthread_stack->rip = kernel_thread;
+  kthread_stack->rip = entry_kernel_thread;
 
   kthread_stack->rbx = 0;
   kthread_stack->rbp = 0;
@@ -44,8 +49,6 @@ void thread_create(struct task_struct * pthread,
   kthread_stack->r13 = 0;
   kthread_stack->r14 = 0;
   kthread_stack->r15 = 0;
-  kthread_stack->rdi = (uint64_t)func;
-  kthread_stack->rsi = (uint64_t)args;
 }
 
 void init_thread(struct task_struct * pthread, const char *name, int priority)

@@ -49,12 +49,6 @@ struct thread_stack {
   uint64_t r13;
   uint64_t r14;
   uint64_t r15;
-  // I do protect both rdi and rsi 
-  // in order to let our parameters can be passed
-  uint64_t rdi;
-  uint64_t rsi;
-  //void (*func)(void *); // call function (rdi)
-  //void *args; // ptr to args (no use now)
 
   void (*rip)(void (*)(void *), void * args);
   void (*reserved_retaddr); // no use pointer

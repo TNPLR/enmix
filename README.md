@@ -20,7 +20,9 @@ When the system boot, there are many steps to do.
 
 ## Memory
 0x200 ARDS Memory structure  
-0x900 Real mode loader  
+0x900 Real mode loader
+0x910 GDT Table
+0x9C0 TSS Structure
 0x1000 ~ 0x9000 paging  
 0x10000 init program  
 0x100000 ~ 0x200000 kernel (0xc0100000 vaddr)  

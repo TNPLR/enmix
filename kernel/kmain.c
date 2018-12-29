@@ -78,7 +78,7 @@ int kmain(void)
   kputuint(sizeof(struct task_struct), 10);
   kputs("\n");
   thread_start("kthread", 15, k_thread_a, "FIRS ");
-  thread_start("kthr", 31, k_thread_a, "SECO ");
+  //thread_start("kthr", 31, k_thread_a, "SECO ");
   kputs("[DEBUG] Thread start done\n");
   enable_interrupt();
   while (1) {

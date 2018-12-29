@@ -3,6 +3,7 @@
 SECTION .loader_start vstart=0x900
 loader_start:
   jmp loader_main
+times 910 - ($-$$) db 0x0
 gdt_addr:
   GDT_BASE:
     dd 0x00000000
@@ -19,9 +20,12 @@ gdt_addr:
   GDT_CODE_64:
     dd 0x0000FFFF
     dd 0x00AF9A00
+    dq 0
   GDT_DATA_64:
     dd 0x0000FFFF
-    dd 0x00AF9200
+    dd 0x00009200
+    dq 0
+times 24 dq 0
 gdt_end:
 GDT_SIZE equ gdt_end - gdt_addr
 GDT_LIMIT equ GDT_SIZE - 1

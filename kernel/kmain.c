@@ -8,6 +8,9 @@
 #include "memory.h"
 #include "thread.h"
 #include "assert.h"
+#include "keyboard.h"
+#include <stdint.h>
+
 void init_data_segment()
 {
   asm volatile("movw %0, %%ax;"
@@ -50,6 +53,7 @@ void init_all(void)
   print_ram();
   mem_init();
   thread_sys_init();
+  keyboard_init();
   kputs("[INFO] Init done\n");
 }
 
@@ -77,12 +81,12 @@ int kmain(void)
   kputs("\n");
   kputuint(sizeof(struct task_struct), 10);
   kputs("\n");
-  thread_start("kthread", GENERAL_PRIORITY, k_thread_a, "FIRS ");
-  thread_start("kthr", GENERAL_PRIORITY, k_thread_a, "SECO ");
+  //thread_start("kthread", GENERAL_PRIORITY, k_thread_a, "FIRS ");
+  //thread_start("kthr", GENERAL_PRIORITY, k_thread_a, "SECO ");
   kputs("[DEBUG] Thread start done\n");
   enable_interrupt();
   while (1) {
-    kputs("MAIN ");
+    //kputs("MAIN ");
   }
   return 0;
 }

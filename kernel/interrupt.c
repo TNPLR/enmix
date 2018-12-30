@@ -7,7 +7,7 @@
 #include "assert.h"
 #define INTERRUPT_DESC_SETTING 0x8E
 #define INTER
-#define IDT_DESC_CNT 0x21
+#define IDT_DESC_CNT 0x30
 #define CODE_64_SELECTOR 0x20
 struct gate_desc {
   uint16_t offset_low16;
@@ -21,13 +21,6 @@ struct gate_desc {
 };
 
 static const char * interrupt_str[256];
-static void int_puts(const char * s)
-{
-  while(*s) {
-    vga_putc(*s);
-    ++s;
-  }
-}
 void general_interrupt(uint64_t s, uint64_t err)
 {
   if (s == 0x27 || s == 0x2f) {
@@ -35,27 +28,27 @@ void general_interrupt(uint64_t s, uint64_t err)
   } // fake interrupt
   set_cursor(0);
   for (int i = 0; i < 20; ++i) {
-    int_puts("                                                  \n");
+    kputs("                                                  \n");
   }
   set_cursor(0);
-  int_puts("**************************************************\n");
-  int_puts("[EMERG] EXCEPTION MASSAGE\n");
-  int_puts("**************************************************\n");
-  int_puts("Interrupt! No. ");
+  kputs("**************************************************\n");
+  kputs("[EMERG] EXCEPTION MASSAGE\n");
+  kputs("**************************************************\n");
+  kputs("Interrupt! No. ");
   kputuint(s, 10);
-  int_puts("--");
-  int_puts(interrupt_str[s%256]);
+  kputs("--");
+  kputs(interrupt_str[s%256]);
   if (s == 14) {// page fault
     uint64_t page_fault_vaddr;
     asm("movq %%cr2, %0":"=r"(page_fault_vaddr));
-    int_puts("\nPAGE_FAULT_ADDR = 0x");
+    kputs("\nPAGE_FAULT_ADDR = 0x");
     kputuint(page_fault_vaddr, 16);
   }
-  int_puts("\nError Number: 0x");
+  kputs("\nError Number: 0x");
   kputuint(err, 16);
-  int_puts("\n**************************************************\n");
-  int_puts("[EMERG] EXCEPTION MASSAGE END\n");
-  int_puts("**************************************************\n");
+  kputs("\n**************************************************\n");
+  kputs("[EMERG] EXCEPTION MASSAGE END\n");
+  kputs("**************************************************\n");
   while (1);
 }
 

@@ -1,4 +1,5 @@
 [bits 64]
+DEFAULT REL
 %define ERROR_CODE nop
 %define ZERO push 0
 
@@ -53,9 +54,9 @@ intr%1entry:
   out 0xa0, al
   out 0x20, al
   extern idt_func_table
-  ;call [idt_func_table + %1 * 8]
-  extern %3
-  call %3
+  call [idt_func_table + %1 * 8]
+  ;extern %3
+  ;call %3
   jmp intr_ret
 
 section .data
@@ -116,3 +117,4 @@ INTVECTOR 0x2B, ZERO, general_interrupt
 INTVECTOR 0x2C, ZERO, general_interrupt
 INTVECTOR 0x2D, ZERO, general_interrupt
 INTVECTOR 0x2E, ZERO, general_interrupt
+INTVECTOR 0x2F, ZERO, general_interrupt

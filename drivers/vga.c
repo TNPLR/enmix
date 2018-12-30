@@ -2,6 +2,13 @@
 #include "kio.h"
 #include "cpuio.h"
 #include <stdint.h>
+static void clear_screen(void)
+{
+  uint16_t * ptr = (uint16_t *)0xb8000;
+  for (int i = 0; i < 2000; ++i) {
+    *ptr++ = 0x0720;
+  }
+}
 static uint16_t put_backspace(uint16_t cursor)
 {
   --cursor;
@@ -21,6 +28,23 @@ static uint16_t put_carriage_return(uint16_t cursor)
 static uint16_t put_new_line(uint16_t cursor)
 {
   cursor += 80 - cursor % 80;
+  return cursor;
+}
+static uint16_t put_vertical_tab(uint16_t cursor)
+{
+  cursor += 80;
+  return cursor;
+}
+static uint16_t put_form_feed(uint16_t cursor)
+{
+  cursor = 0;
+  clear_screen();
+  return cursor;
+}
+static uint16_t put_horizontal_tab(uint16_t cursor)
+{
+  cursor += 8;
+  cursor &= 0xFFF8;
   return cursor;
 }
 static void roll_screen(void)
@@ -67,6 +91,15 @@ void vga_putc(char const c)
     case '\b':
       cursor = put_backspace(cursor);
       break;
+    case '\t':
+      cursor = put_horizontal_tab(cursor);
+      break;
+    case '\v':
+      cursor = put_vertical_tab(cursor);
+      break;
+    case '\f':
+      cursor = put_form_feed(cursor);
+      break;
     default:
       cursor = put_normal_char(cursor, c);
       break;
@@ -74,7 +107,7 @@ void vga_putc(char const c)
   if (cursor >= 2000) {
     roll_screen();
     clear_last_line();
-    cursor = 1920;
+    cursor = 1920 + cursor % 80;
   }
   set_cursor(cursor);
 }

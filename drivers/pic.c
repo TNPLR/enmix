@@ -21,7 +21,8 @@ void pic_init(void)
   koutb(PIC_SLAVE_DATA, 0x02);
   koutb(PIC_SLAVE_DATA, 0x01);
 
-  koutb(PIC_MASTER_DATA, 0xfe);
+  // testing keyborad now
+  koutb(PIC_MASTER_DATA, 0xfd);
   koutb(PIC_SLAVE_DATA, 0xff);
 
   kputs("[INFO] PIC set\n");

@@ -7,6 +7,7 @@ void set_kputc(void (*inputc)(char const))
 {
   kputc = inputc;
 }
+
 void set_kputs(void (*inputs)(char const *))
 {
   kputs = inputs;

@@ -108,8 +108,71 @@ static char keymap[][2] = {
 
 static void intr_keyboard_handler(void)
 {
-  kputc('K');
-  kinb(KEYBOARD_BUF_PORT);
+  int ctrl_down_last = ctrl_status;
+  int shift_down_last = shift_status;
+  int capslock_last = capslock_status;
+  int break_code;
+  uint16_t scancode = kinb(KEYBOARD_BUF_PORT);
+  if (scancode == 0xe0) {
+    extend_scancode = 1;
+    return;
+  }
+
+  if (extend_scancode) {
+    scancode |= 0xe000;
+    extend_scancode = 0;
+  }
+
+  break_code = ((scancode & 0x0080) != 0); //detect break code
+  if (break_code) {
+    uint16_t make_code = (scancode &= 0xff7f);
+    if (make_code == LCTRL_MAKE || make_code == RCTRL_MAKE) {
+      ctrl_status = 0;
+    } else if (make_code == LSHIFT_MAKE || make_code == RSHIFT_MAKE) {
+      shift_status = 0;
+    } else if (make_code == LALT_MAKE || make_code == RALT_MAKE) {
+      alt_status = 0;
+    }
+    return;
+  } else if ((scancode > 0x00 && scancode < 0x3B) ||
+      (scancode == RALT_MAKE) || (scancode == RCTRL_MAKE)) {
+    int shift = 0;
+    if ((scancode < 0x0E) || (scancode == 0x29) || (scancode == 0x1A) ||
+        (scancode == 0x1B) || (scancode == 0x2B) || (scancode == 0x27) ||
+        (scancode == 0x28) || (scancode == 0x33) || (scancode == 0x34) ||
+        (scancode == 0x35)) {
+      if (shift_down_last) {
+        shift = 1;
+      }
+    } else {
+      if (shift_down_last && capslock_last) {
+        shift = 0;
+      } else if (shift_down_last || capslock_last) {
+        shift = 1;
+      } else {
+        shift = 0;
+      }
+    }
+    uint8_t index = (scancode &= 0xFF);
+
+    char cur_char = keymap[index][shift];
+    if (cur_char) {
+      kputc(cur_char);
+      return;
+    }
+
+    if (scancode == LCTRL_MAKE || scancode == RCTRL_MAKE) {
+      ctrl_status = 1;
+    } else if (scancode == LSHIFT_MAKE || scancode == RSHIFT_MAKE) {
+      shift_status = 1;
+    } else if (scancode == LALT_MAKE || scancode == RALT_MAKE) {
+      alt_status = 1;
+    } else if (scancode == CAPSLOCK_MAKE) {
+      capslock_status = !capslock_status;
+    }
+  } else {
+    kputs("[ERR] Unknown Key\n");
+  }
 }
 
 void keyboard_init(void)

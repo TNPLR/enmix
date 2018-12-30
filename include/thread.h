@@ -2,6 +2,7 @@
 #define THREAD_H_
 #include "deque.h"
 #include <stdint.h>
+#define GENERAL_PRIORITY 1
 
 enum task_status {
   TASK_RUNNING,

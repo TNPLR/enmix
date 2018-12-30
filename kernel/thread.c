@@ -85,7 +85,7 @@ struct task_struct * thread_start(const char * name, int priority,
 static void make_main_thread(void)
 {
   main_thread = running_thread();
-  init_thread(main_thread, "main", 31);
+  init_thread(main_thread, "main", GENERAL_PRIORITY);
 
   deque_push_back(&thread_all_deque, &main_thread->all_deque_tag);
 }
@@ -124,7 +124,7 @@ void block_thread(enum task_status status)
   }
   struct task_struct * current_thread = running_thread();
   current_thread->status = status;
-  schedule(); // blocking, so give the cpu to others
+  schedule(); // blocking, give the cpu to others
   if (int_status) {
     enable_interrupt();
   }

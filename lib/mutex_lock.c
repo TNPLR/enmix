@@ -27,7 +27,7 @@ void semaphore_p(struct semaphore * sema)
   if (int_status) {
     disable_interrupt();
   }
-  while (!sema->value) {
+  while (sema->value == 0) {
     /* Current thread should not be in standby deque */
     if (deque_exist(&sema->standby, &running_thread()->general_tag)) {
       ERROR_WALL("[ERR] Current thread shouldn't be in standby deque\n");

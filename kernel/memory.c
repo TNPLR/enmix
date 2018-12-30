@@ -236,12 +236,14 @@ void disable_no_execute(void)
       ::"i"(0xFFFFFFFFFFFFFFFFULL ^ (1<<11)),"c"(0xC0000080):"ax");
   kputs("[INFO] No-execute disable\n");
 }
+
+/* XD below 0xb8000 */
 static void low_mb_no_execute(void)
 {
-  uint64_t * tmp_ptr = pde_ptr(0x0);
-  for (int i = 0; i < 256; ++i) {
+  uint64_t * tmp_ptr = pte_ptr(0x0);
+  for (int i = 0; i < 184; ++i) {
     *tmp_ptr |= PG_XD_1;
-    ++tmp_ptr;
+    tmp_ptr += 1;
   }
   kputs("[INFO] First MB now No-Execute\n");
 }
@@ -255,6 +257,7 @@ void mem_init(void)
 {
   kputs("[INFO] Mem init start\n");
   mem_pool_init(get_ram());
+  /* XD below 0xb8000 */
   low_mb_no_execute();
   init_no_execute();
   kputs("[INFO] Mem init done\n");

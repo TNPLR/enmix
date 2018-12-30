@@ -37,6 +37,7 @@ void print_ram(void)
 }
 void init_all(void)
 {
+  disable_interrupt();
   init_std_put();
   tty_init();
   kputs("[INFO] Init start\n");
@@ -46,7 +47,6 @@ void init_all(void)
   pic_init();
   idt_init();
   timer8253_init();
-  //disable_interrupt();
   print_ram();
   mem_init();
   thread_sys_init();
@@ -82,7 +82,7 @@ int kmain(void)
   kputs("[DEBUG] Thread start done\n");
   enable_interrupt();
   while (1) {
-    kputs("MAIN ");
+    //kputs("MAIN ");
   }
   return 0;
 }

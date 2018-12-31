@@ -2,6 +2,7 @@
 #include "kio.h"
 #include "interrupt.h"
 #include "cpuio.h"
+#include "iobuffer.h"
 #include <stdint.h>
 
 #define KEYBOARD_BUF_PORT 0x60
@@ -42,6 +43,7 @@ static int shift_status;
 static int alt_status;
 static int capslock_status;
 static int extend_scancode;
+static struct iobuffer keyboard_buf;
 
 /* Shift or not */
 static char keymap[][2] = {
@@ -157,7 +159,10 @@ static void intr_keyboard_handler(void)
 
     char cur_char = keymap[index][shift];
     if (cur_char) {
-      kputc(cur_char);
+      if (!iobuffer_full(&keyboard_buf)) {
+        kputc(cur_char);
+        iobuffer_putchar(&keyboard_buf, cur_char);
+      }
       return;
     }
 
@@ -177,6 +182,7 @@ static void intr_keyboard_handler(void)
 
 void keyboard_init(void)
 {
+  iobuffer_init(&keyboard_buf);
   setup_handler(0x21, (void (*)(uint64_t,uint64_t))intr_keyboard_handler);
   kputs("[INFO] Keyboard init done\n");
 }

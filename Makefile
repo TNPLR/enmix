@@ -12,7 +12,7 @@ CADDRFLAGS= -fno-plt -fno-pic
 CFLAGS = ${CWARNFLAGS} -ffreestanding -fno-stack-protector \
 							-mno-red-zone -std=gnu11 \
 							-mno-mmx -mno-sse -mno-sse2 -nostdlib \
-							-I${TOPDIR}/include/ ${CADDRFLAGS} -O0
+							-I${TOPDIR}/include/ ${CADDRFLAGS}
 CXXFLAGS =
 ASFLAGS =
 LDFLAGS =
@@ -22,7 +22,7 @@ NASMFLAGS =
 SRC_BOOT = ${addprefix boot/,mbr.asm rmain.asm}
 SRC_INIT = ${addprefix init/,pmain.c}
 SRC_KERNEL_C = ${addprefix kernel/,interrupt.c kio.c \
-	kmain.c e820.c memory.c thread.c assert.c}
+	kmain.c e820.c memory.c thread.c assert.c iobuffer.c}
 SRC_KERNEL_ASM = ${addprefix kernel/,intr.asm switch.asm}
 SRC_DRIVERS_C = ${addprefix drivers/,vga.c pic.c timer8253.c tty.c \
 	keyboard.c}

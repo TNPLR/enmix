@@ -9,7 +9,9 @@
 #include "thread.h"
 #include "assert.h"
 #include "keyboard.h"
+#include "iobuffer.h"
 #include <stdint.h>
+#include <stddef.h>
 
 void init_data_segment()
 {
@@ -59,9 +61,10 @@ void init_all(void)
 
 void k_thread_a(void * args)
 {
-  const char * str = (const char *)args;
   while (1) {
-    kputs(str);
+    if (!iobuffer_empty(&keyboard_buf)) {
+      kputc(iobuffer_getchar(&keyboard_buf));
+    }
   }
 }
 
@@ -81,7 +84,7 @@ int kmain(void)
   kputs("\n");
   kputuint(sizeof(struct task_struct), 10);
   kputs("\n");
-  //thread_start("kthread", GENERAL_PRIORITY, k_thread_a, "FIRS ");
+  thread_start("kthread", GENERAL_PRIORITY, k_thread_a, NULL);
   //thread_start("kthr", GENERAL_PRIORITY, k_thread_a, "SECO ");
   kputs("[DEBUG] Thread start done\n");
   enable_interrupt();

@@ -13,6 +13,7 @@ struct iobuffer {
 };
 void iobuffer_init(struct iobuffer * buf);
 int iobuffer_full(struct iobuffer * buf);
+int iobuffer_empty(struct iobuffer * buf);
 char iobuffer_getchar(struct iobuffer * buf);
 void iobuffer_putchar(struct iobuffer * buf, const char c);
 #endif

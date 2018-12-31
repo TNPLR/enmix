@@ -43,7 +43,7 @@ static int shift_status;
 static int alt_status;
 static int capslock_status;
 static int extend_scancode;
-static struct iobuffer keyboard_buf;
+struct iobuffer keyboard_buf;
 
 /* Shift or not */
 static char keymap[][2] = {
@@ -160,7 +160,6 @@ static void intr_keyboard_handler(void)
     char cur_char = keymap[index][shift];
     if (cur_char) {
       if (!iobuffer_full(&keyboard_buf)) {
-        kputc(cur_char);
         iobuffer_putchar(&keyboard_buf, cur_char);
       }
       return;

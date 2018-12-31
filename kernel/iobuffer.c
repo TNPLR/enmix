@@ -20,9 +20,9 @@ int iobuffer_full(struct iobuffer * buf)
   return next_pos(buf->head) == buf->tail;
 }
 
-static int iobuffer_empty(struct iobuffer * buf)
+int iobuffer_empty(struct iobuffer * buf)
 {
-  return buf->head = buf->tail;
+  return buf->head == buf->tail;
 }
 
 static void wait(struct task_struct ** standby)

@@ -21,8 +21,8 @@ void pic_init(void)
   koutb(PIC_SLAVE_DATA, 0x02);
   koutb(PIC_SLAVE_DATA, 0x01);
 
-  // testing keyborad now
-  koutb(PIC_MASTER_DATA, 0xfd);
+  // turn on timer and keyboard
+  koutb(PIC_MASTER_DATA, 0xfc);
   koutb(PIC_SLAVE_DATA, 0xff);
 
   kputs("[INFO] PIC set\n");

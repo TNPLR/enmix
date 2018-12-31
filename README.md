@@ -27,5 +27,5 @@ When the system boot, there are many steps to do.
 0x10000 init program  
 0x100000 ~ 0x200000 kernel (0xc0100000 vaddr)  
 0x204000 kernel stack (0xc0204000 vaddr)  
-0x205000 double fault stack (0xc0208000)
+0x205000 double fault stack (0xc0205000)
 0x208000 ~ 0x20C000 memory pool

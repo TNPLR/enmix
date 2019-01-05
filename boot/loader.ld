@@ -1,8 +1,8 @@
-ENTRY(_start);
+ENTRY(loader);
 SECTIONS {
-  . = 0x7C00;
-  .text : {
-    *(.loader)
+  . = 0x900;
+  .text : 
+  {
     *(.text)
   }
 }

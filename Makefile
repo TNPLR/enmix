@@ -30,12 +30,12 @@ OBJ_DRIVERS = ${SRC_DRIVERS:.S=.o .c=.o}
 OBJ_LIB = ${SRC_LIB:.S=.o .c=.o}
 .DEFAULT_GOAL := all
 all: img
-img: disk48M.hdd mbr.bin
-	dd if=mbr.bin of=./disk48M.hdd bs=512 count=1 conv=notrunc
+img: disk48M.hdd loader.bin
+	dd if=loader.bin of=./disk48M.hdd bs=512 count=1 conv=notrunc
 disk48M.hdd:
 	dd if=/dev/zero of=./disk48M.hdd bs=512 count=98304
-mbr.bin: ${OBJ_BOOT}
-	${LD} ${LDFLAGS} -Ttext=0x7c00 $^ -o $@
+loader.bin: ${OBJ_BOOT}
+	${LD} ${LDFLAGS} -T boot/loader.ld $^ -o $@
 	${OC} -I elf64-x86-64 -O binary $@ $@
 %.o: %.S
 	${AS} ${ASFLAGS} -o $@ $<

@@ -38,6 +38,24 @@ DAC:
   .word 3 # Read 3 sectors for now
   .long 0x900
   .quad 0x1 # from sector 1 (the second sector)
+.org 446, 0x0
+# MBR
+# Active
+.byte 0x80
+# CHS Start Pos (NULL in miros)
+.byte 0
+.byte 0
+.byte 0
+# Partition Type
+.byte 0x0C # FAT32 with LBA
+# CHS End Pos (NULL in miros)
+.byte 0
+.byte 0
+.byte 0
+# LBA Start Pos
+.long 32  # Boot System needs 32 sectors
+# Sectors count
+.long 98272  # 98304 - 32
 .org 510, 0x0
 .byte 0x55 # Boot Flags
 .byte 0xaa

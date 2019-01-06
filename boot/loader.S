@@ -8,13 +8,40 @@ loader:
   xorw %cx, %cx
   xorw %dx, %dx
 
-  movw $0x1300, %ax
-  movw $0x0007, %bx
+# Move stack to 0x900
+  movw $0x900, %ax
+  movw %ax, %ss
+
   movw $0xA, %cx
-  movw $0, %dx
   movw $thanks, %bp
-  int $0x10
+  call println
   jmp .
   hlt
+
 thanks:
   .ascii "I Love You"
+
+# Print string
+# Registers:
+#   cx: Characters count
+#   bp: Address of the string
+println:
+# Get cursor
+  pushw %cx
+  movw $0, %bx
+  movb $0x03, %ah
+  int $0x10
+
+# Print string
+  popw %cx
+  movw $0x1300, %ax
+  movw $0x0007, %bx
+  int $0x10
+
+# Move to next line
+  movb $0x02, %ah
+  movw $0, %bx
+  addb $1, %dh
+  movb $0, %dl
+  int $0x10
+  ret

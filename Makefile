@@ -9,7 +9,7 @@ COPTFLAGS = -O2
 CSTDFLAGS = -std=gnu11
 CFLAGS = ${CWARNFLAGS} ${CADDRFLAGS} ${COPTFLAGS} ${CSTDFLAGS} \
 				 -mno-red-zone -ffreestanding -mno-mmx -mno-sse -mno-sse2 \
-				 -nostdlib -I${TOPDIR}/include/
+				 -nostdlib -I${TOPDIR}
 ASFLAGS =
 LDFLAGS =
 
@@ -45,7 +45,10 @@ loader.bin: ${OBJ_BOOT}
 	${AS} ${ASFLAGS} -o $@ $<
 %.o: %.c
 	${CC} ${CFLAGS} -o $@ $<
-test:
+test: qemu-test
+bochs-test:
 	bochs -f ../bochs.bx
+qemu-test:
+	qemu-system-x86_64 -drive file=disk48M.hdd,format=raw -enable-kvm
 clean:
 	rm -rf *.bin *.o boot/*.o

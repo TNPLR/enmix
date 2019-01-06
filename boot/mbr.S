@@ -11,7 +11,7 @@ _start:
 
 # Use 0x10 interrupt to write a character
   movb $0x09, %ah   # Write character
-  movb $'R', %al    # Print 'R'
+  movb $'M', %al    # Print 'R'
   movw $0x0007, %bx # Background: Black; Text: Light gray
   movw $1, %cx      # Print one character
   int $0x10
@@ -35,7 +35,7 @@ ERROR:
 DAC:
   .byte 0x10 # Sizeof DAC
   .byte 0 # unused
-  .word 3 # Read 3 sectors for now
+  .word 1 # Read 1 sectors (FAT Boot record)
   .long 0x900
   .quad 0x1 # from sector 1 (the second sector)
 .org 446, 0x0
@@ -53,9 +53,9 @@ DAC:
 .byte 0
 .byte 0
 # LBA Start Pos
-.long 32  # Boot System needs 32 sectors
+.long 1  # MBR needs 1 sectors
 # Sectors count
-.long 98272  # 98304 - 32
+.long 98303  # 98304 - 1
 .org 510, 0x0
 .byte 0x55 # Boot Flags
 .byte 0xaa

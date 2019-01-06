@@ -13,7 +13,7 @@ CFLAGS = ${CWARNFLAGS} ${CADDRFLAGS} ${COPTFLAGS} ${CSTDFLAGS} \
 ASFLAGS =
 LDFLAGS =
 
-BOOT_FILE = mbr.S loader.S
+BOOT_FILE = mbr.S loader.S fat.S
 INIT_FILE =
 KERNEL_FILE =
 DRIVERS_FILE =
@@ -30,9 +30,9 @@ OBJ_DRIVERS = ${SRC_DRIVERS:.S=.o .c=.o}
 OBJ_LIB = ${SRC_LIB:.S=.o .c=.o}
 .DEFAULT_GOAL := all
 all: img
-img: disk48M.hdd mbr.bin loader.bin
+img: disk48M.hdd mbr.bin loader.bin fat.bin
 	dd if=mbr.bin of=./disk48M.hdd bs=512 count=1 conv=notrunc
-	dd if=loader.bin of=./disk48M.hdd bs=512 seek=1 count=3 conv=notrunc
+	dd if=fat.bin of=./disk48M.hdd bs=512 seek=1 count=1 conv=notrunc
 disk48M.hdd:
 	dd if=/dev/zero of=./disk48M.hdd bs=512 count=98304
 mbr.bin: ${OBJ_BOOT}
@@ -40,6 +40,9 @@ mbr.bin: ${OBJ_BOOT}
 	${OC} -I elf64-x86-64 -O binary $@ $@
 loader.bin: ${OBJ_BOOT}
 	${LD} ${LDFLAGS} -T boot/loader.ld boot/loader.o -o $@
+	${OC} -I elf64-x86-64 -O binary $@ $@
+fat.bin: ${OBJ_BOOT}
+	${LD} ${LDFLAGS} -T boot/fat.ld boot/fat.o -o $@
 	${OC} -I elf64-x86-64 -O binary $@ $@
 %.o: %.S
 	${AS} ${ASFLAGS} -o $@ $<

@@ -9,7 +9,5 @@ SECTIONS {
   .text32 :
   {
     *(.text32)
-    *(pmain.text32)
-    _lmatext = .;
   }
 }

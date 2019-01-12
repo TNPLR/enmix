@@ -37,7 +37,7 @@ DAC:
   .byte 0 # unused
   .word 1 # Read 1 sectors (FAT Boot record)
   .long 0x900
-  .quad 0x1 # from sector 1 (the second sector)
+  .quad 0x2 # from sector 1 (the third sector)
 .org 446, 0x0
 # MBR
 # Active
@@ -47,7 +47,7 @@ DAC:
 .byte 0
 .byte 0
 # Partition Type
-.byte 0x0C # FAT32 with LBA
+.byte 0x83 # Any Linux Partition
 # CHS End Pos (NULL in miros)
 .byte 0
 .byte 0
